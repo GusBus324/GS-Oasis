@@ -10,8 +10,93 @@
     {% extends 'base.html' %}
 
     {% block content %}
-    <h1>Welcome to GS Oasis</h1>
-    <p>Your one-stop solution for relaxation and rejuvenation.</p>
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Welcome to <span class="highlight">GS Oasis</span></h1>
+            <p class="tagline">Your digital shield against online scams and fraud</p>
+            <p class="subtitle">We provide cutting-edge tools to identify, prevent, and protect you from digital threats</p>
+            <div class="cta-buttons">
+                <a href="{{ url_for('scan_image') }}" class="btn btn-primary">
+                    <span class="icon">🔍</span> Scan Image
+                </a>
+                <a href="{{ url_for('scan_link') }}" class="btn btn-primary">
+                    <span class="icon">🔗</span> Verify Link
+                </a>
+                <a href="{{ url_for('scan_file') }}" class="btn btn-primary">
+                    <span class="icon">📄</span> Check File
+                </a>
+                <a href="{{ url_for('ai_assistant') }}" class="btn btn-secondary">
+                    <span class="icon">🤖</span> Ask Our AI
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="features">
+        <h2>How We <span class="highlight">Protect You</span></h2>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="card-icon">🖼️</div>
+                <h3>Image Analysis</h3>
+                <p>Our advanced AI detects manipulated images, fake listings, and phishing attempts hidden in photos.</p>
+                <a href="{{ url_for('scan_image') }}" class="btn-text">Scan an image →</a>
+            </div>
+            <div class="feature-card">
+                <div class="card-icon">🔒</div>
+                <h3>Link Verification</h3>
+                <p>Stay safe online with our real-time URL checker that identifies phishing sites and malicious links.</p>
+                <a href="{{ url_for('scan_link') }}" class="btn-text">Verify a link →</a>
+            </div>
+            <div class="feature-card">
+                <div class="card-icon">🛡️</div>
+                <h3>File Scanning</h3>
+                <p>Detect malware, ransomware, and suspicious code in files before they can harm your devices.</p>
+                <a href="{{ url_for('scan_file') }}" class="btn-text">Check a file →</a>
+            </div>
+            <div class="feature-card">
+                <div class="card-icon">💬</div>
+                <h3>AI Assistant</h3>
+                <p>Get instant answers to your security questions from our specialized scam-prevention AI.</p>
+                <a href="{{ url_for('ai_assistant') }}" class="btn-text">Ask a question →</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="stats">
+        <h2>Making the Internet <span class="highlight">Safer</span></h2>
+        <div class="stat-grid">
+            <div class="stat-item">
+                <h3>10,000+</h3>
+                <p>Scams Identified</p>
+            </div>
+            <div class="stat-item">
+                <h3>5,000+</h3>
+                <p>Users Protected</p>
+            </div>
+            <div class="stat-item">
+                <h3>98%</h3>
+                <p>Accuracy Rate</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="testimonials">
+        <h2>What Our <span class="highlight">Users Say</span></h2>
+        <div class="testimonial-grid">
+            <div class="testimonial-card">
+                <div class="quote">"GS Oasis saved me from a sophisticated phishing attempt that my regular antivirus missed."</div>
+                <div class="author">— Sarah J.</div>
+            </div>
+            <div class="testimonial-card">
+                <div class="quote">"The AI assistant helped me recognize and avoid a gift card scam that looked incredibly legitimate."</div>
+                <div class="author">— Michael T.</div>
+            </div>
+            <div class="testimonial-card">
+                <div class="quote">"I use the link scanner before clicking on any unfamiliar URLs. It's become an essential part of my online safety routine."</div>
+                <div class="author">— Priya K.</div>
+            </div>
+        </div>
+    </section>
     {% endblock %}
 </body>
 </html>

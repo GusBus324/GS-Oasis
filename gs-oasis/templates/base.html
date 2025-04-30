@@ -1,29 +1,52 @@
+gs-oasis/templates/base.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GS Oasis</title>
+    <title>GS Oasis - Scam Prevention & Identification</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <header>
-        <h1>Welcome to GS Oasis</h1>
-        <nav>
-            <ul>
-                <li><a href="{{ url_for('index') }}">Home</a></li>
-                <li><a href="{{ url_for('about') }}">About</a></li>
-            </ul>
-        </nav>
+        <div class="container">
+            <div class="logo">
+                <h1>GS Oasis</h1>
+                <p>Your shield against online scams</p>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('index') }}">Home</a></li>
+                    <li><a href="{{ url_for('scan_image') }}">Image Scan</a></li>
+                    <li><a href="{{ url_for('scan_link') }}">Link Scan</a></li>
+                    <li><a href="{{ url_for('scan_file') }}">File Scan</a></li>
+                    <li><a href="{{ url_for('ai_assistant') }}">AI Assistant</a></li>
+                    <li><a href="{{ url_for('resources') }}">Resources</a></li>
+                    <li><a href="{{ url_for('about') }}">About</a></li>
+                </ul>
+            </nav>
+        </div>
     </header>
 
     <main>
-        {% block content %}
-        {% endblock %}
+        <div class="container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            {% block content %}{% endblock %}
+        </div>
     </main>
 
     <footer>
-        <p>&copy; 2023 GS Oasis. All rights reserved.</p>
+        <div class="container">
+            <p>&copy; 2025 GS Oasis. All rights reserved.</p>
+            <p>A platform dedicated to scam prevention and identification.</p>
+        </div>
     </footer>
 
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
