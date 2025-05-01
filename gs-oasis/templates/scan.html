@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scan | GS-Oasis</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/scan.js" defer></script>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <h1>GS-Oasis</h1>
+            <p>Your Safe Haven from Digital Threats</p>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="scan.html" class="active">Scan</a></li>
+                <li><a href="education.html">Learn</a></li>
+                <li><a href="resources.html">Resources</a></li>
+                <li><a href="about.html">About Us</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="page-header">
+            <h2>Scan for Threats</h2>
+            <p>Check links, files, or images for potential security threats</p>
+        </section>
+
+        <section class="scan-options">
+            <div class="scan-tabs">
+                <button class="tab-btn active" data-tab="link-scanner">Link Scanner</button>
+                <button class="tab-btn" data-tab="file-scanner">File Scanner</button>
+                <button class="tab-btn" data-tab="image-scanner">Image Scanner</button>
+            </div>
+
+            <div class="tab-content active" id="link-scanner">
+                <h3>Link Scanner</h3>
+                <p>Paste a suspicious URL to check if it's safe before clicking</p>
+                <div class="scan-form">
+                    <input type="url" id="url-input" placeholder="https://example.com" required>
+                    <button id="url-scan-btn" class="btn primary">Scan URL</button>
+                </div>
+                <div class="scan-result" id="url-result">
+                    <!-- Results will appear here -->
+                </div>
+            </div>
+
+            <div class="tab-content" id="file-scanner">
+                <h3>File Scanner</h3>
+                <p>Upload a file to check for malicious code or hidden threats</p>
+                <div class="scan-form">
+                    <div class="file-upload">
+                        <input type="file" id="file-input">
+                        <label for="file-input" class="file-label">Choose a file</label>
+                    </div>
+                    <button id="file-scan-btn" class="btn primary">Scan File</button>
+                </div>
+                <div class="scan-result" id="file-result">
+                    <!-- Results will appear here -->
+                </div>
+            </div>
+
+            <div class="tab-content" id="image-scanner">
+                <h3>Image Scanner</h3>
+                <p>Upload an image to check for manipulation or hidden data</p>
+                <div class="scan-form">
+                    <div class="file-upload">
+                        <input type="file" id="image-input" accept="image/*">
+                        <label for="image-input" class="file-label">Choose an image</label>
+                    </div>
+                    <button id="image-scan-btn" class="btn primary">Scan Image</button>
+                </div>
+                <div class="scan-result" id="image-result">
+                    <!-- Results will appear here -->
+                </div>
+            </div>
+        </section>
+
+        <section class="scan-info">
+            <h3>How Our Scanning Works</h3>
+            <div class="info-cards">
+                <div class="info-card">
+                    <h4>Comprehensive Analysis</h4>
+                    <p>Our system checks against multiple databases of known threats and uses advanced algorithms to detect potential risks.</p>
+                </div>
+                <div class="info-card">
+                    <h4>Privacy First</h4>
+                    <p>We don't store your files or the content of links. All scanning is done in real-time and your data remains private.</p>
+                </div>
+                <div class="info-card">
+                    <h4>Detailed Reports</h4>
+                    <p>Get easy-to-understand reports about potential threats and recommendations on how to proceed safely.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>GS-Oasis</h3>
+                <p>Your Safe Haven from Digital Threats</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="scan.html">Scan</a></li>
+                    <li><a href="education.html">Learn</a></li>
+                    <li><a href="privacy.html">Privacy Policy</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Contact</h3>
+                <p>Email: contact@gs-oasis.com</p>
+                <p>Phone: (123) 456-7890</p>
+            </div>
+        </div>
+        <div class="copyright">
+            <p>&copy; 2023 GS-Oasis. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

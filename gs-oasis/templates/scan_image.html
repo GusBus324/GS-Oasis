@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scan Image</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include 'header.html' %}
+    <main>
+        <section class="scanner">
+            <h1>Scan Image</h1>
+            <p>Upload an image to scan for potential threats.</p>
+            <form action="/scan-image" method="POST" enctype="multipart/form-data">
+                <div class="drop-zone">
+                    <input type="file" name="image" accept="image/*" required>
+                    <p>Drag & drop your image here, or click to select a file.</p>
+                </div>
+                <button type="submit" class="btn primary">Scan Image</button>
+            </form>
+        </section>
+    </main>
+    {% include 'footer.html' %}
+</body>
+</html>

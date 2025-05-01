@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include 'header.html' %}
+    <main>
+        <section class="ai-assistant">
+            <h1>AI Assistant</h1>
+            <p>Ask any question, and our AI Assistant will help you.</p>
+            <form action="/ai-assistant" method="POST">
+                <textarea name="question" placeholder="Type your question here..." required></textarea>
+                <button type="submit" class="btn primary">Ask</button>
+            </form>
+            {% if response %}
+            <div class="response">
+                <h2>Response:</h2>
+                <p>{{ response }}</p>
+            </div>
+            {% endif %}
+        </section>
+    </main>
+    {% include 'footer.html' %}
+</body>
+</html>

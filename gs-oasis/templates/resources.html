@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resources</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include 'header.html' %}
+    <main>
+        <section class="resources">
+            <h1>Why Choose Our AI?</h1>
+            <p>Our AI is designed to be user-friendly, adaptable, and capable of addressing all your needs. Whether you're scanning files, links, or images, our AI ensures a seamless and secure experience.</p>
+
+            <div class="features">
+                <div class="feature-item">
+                    <h2>Intuitive Design</h2>
+                    <p>Our AI interface is simple and easy to use, ensuring that anyone can navigate it effortlessly.</p>
+                </div>
+                <div class="feature-item">
+                    <h2>Comprehensive Scanning</h2>
+                    <p>From files to links and images, our AI can handle it all, providing detailed and accurate results.</p>
+                </div>
+                <div class="feature-item">
+                    <h2>Secure and Reliable</h2>
+                    <p>Your data is safe with us. Our AI uses advanced security protocols to protect your information.</p>
+                </div>
+            </div>
+
+            <div class="cta">
+                <h2>Experience the Future of AI</h2>
+                <p>Try our AI today and see how it can simplify your digital life.</p>
+                <a href="/ai-assistant" class="btn primary">Get Started</a>
+            </div>
+        </section>
+    </main>
+    {% include 'footer.html' %}
+</body>
+</html>
