@@ -1,0 +1,13 @@
+<html>
+<head>
+    <title>Users List</title>
+</head>
+<body>
+    <h1>Registered Users</h1>
+    <ul>
+        {% for username, details in users.items() %}
+            <li>{{ username }} - {{ details['email'] }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

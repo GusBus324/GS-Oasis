@@ -1,7 +1,12 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
+from werkzeug.security import generate_password_hash, check_password_hash
+import re
 
 app = Flask(__name__)
 app.secret_key = "gs-oasis-secret-key"  # Required for flash messages
+
+# Mock database for demonstration purposes
+users = {}
 
 @app.route('/')
 def index():
@@ -52,6 +57,53 @@ def ai_assistant():
 @app.route('/resources')
 def resources():
     return render_template('resources.html')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+
+        # Password validation
+        password_regex = r'^(?=.*[0-9].*[0-9])(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{8,}$'
+        if not re.match(password_regex, password):
+            flash('Password must be at least 8 characters long, include at least 2 numbers, and 1 special symbol.', 'danger')
+            return render_template('register.html')
+
+        if username in users:
+            flash('Username already exists.', 'danger')
+            return render_template('register.html')
+
+        # Store user with hashed password
+        users[username] = {
+            'email': email,
+            'password': generate_password_hash(password)
+        }
+        flash('Registration successful! Please log in.', 'success')
+        return redirect(url_for('login'))
+
+    return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        user = users.get(username)
+        if not user or not check_password_hash(user['password'], password):
+            flash('Invalid username or password.', 'danger')
+            return render_template('login.html')
+
+        flash('Login successful!', 'success')
+        return redirect(url_for('index'))
+
+    return render_template('login.html')
+
+@app.route('/users')
+def users_list():
+    return render_template('users.html', users=users)
 
 if __name__ == '__main__':
     app.run(debug=True)
