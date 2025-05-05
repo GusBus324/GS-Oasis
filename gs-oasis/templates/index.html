@@ -5,6 +5,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <title>GS Oasis - Home</title>
+    <style>
+        .auth-section {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 1.2em;
+        }
+        .auth-section p {
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            color: #333;
+            text-shadow: 0 0 5px #007BFF, 0 0 10px #007BFF;
+        }
+        .auth-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        .auth-buttons a {
+            display: inline-block;
+            padding: 15px 30px;
+            background-color: #007BFF;
+            color: white;
+            text-decoration: none;
+            font-size: 1em;
+            font-weight: bold;
+            border-radius: 8px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .auth-buttons a:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+        .highlighted-text {
+            font-weight: bold;
+            color: yellow;
+            text-shadow: 0 0 5px yellow, 0 0 10px yellow;
+        }
+        .btn.primary {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+        .btn.primary:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
     {% extends 'base.html' %}
@@ -12,7 +61,7 @@
     {% block content %}
     <section class="hero">
         <div class="hero-content">
-            <h1>Welcome to <span class="highlight">GS Oasis</span></h1>
+            <h1 style="text-align: center;">Welcome to <span class="highlight">GS Oasis</span></h1>
             <p class="tagline">Your digital shield against online scams and fraud</p>
             <p class="subtitle">We provide cutting-edge tools to identify, prevent, and protect you from digital threats</p>
             <div class="cta-buttons">
@@ -28,6 +77,12 @@
                 <a href="{{ url_for('ai_assistant') }}" class="btn btn-secondary">
                     <span class="icon">🤖</span> Ask Our AI
                 </a>
+            </div>
+            <div class="auth-section">
+                <p class="highlighted-text">
+                    Join our community today! <a href="{{ url_for('register') }}" class="btn primary">Sign Up</a> to access our services. 
+                    Already a member? <a href="{{ url_for('login') }}" class="btn secondary">Login</a> to continue.
+                </p>
             </div>
         </div>
     </section>
@@ -70,7 +125,7 @@
                 <p>Scams Identified</p>
             </div>
             <div class="stat-item">
-                <h3>5,000+</h3>
+                <h3>5,000+</</h3>
                 <p>Users Protected</p>
             </div>
             <div class="stat-item">

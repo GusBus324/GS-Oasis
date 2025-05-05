@@ -1,16 +1,30 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from werkzeug.security import generate_password_hash, check_password_hash
+import sqlite3
 import re
 
 app = Flask(__name__)
 app.secret_key = "gs-oasis-secret-key"  # Required for flash messages
 
-# Mock database for demonstration purposes
-users = {}
+# Initialize SQLite database
+def init_db():
+    with sqlite3.connect('database.db') as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                email TEXT NOT NULL,
+                password TEXT NOT NULL
+            )
+        ''')
+        conn.commit()
+
+init_db()
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html')  # Updated home page to include login and sign-up options
 
 @app.route('/about')
 def about():
@@ -71,17 +85,17 @@ def register():
             flash('Password must be at least 8 characters long, include at least 2 numbers, and 1 special symbol.', 'danger')
             return render_template('register.html')
 
-        if username in users:
+        try:
+            with sqlite3.connect('database.db') as conn:
+                cursor = conn.cursor()
+                cursor.execute('INSERT INTO users (username, email, password) VALUES (?, ?, ?)', 
+                               (username, email, generate_password_hash(password)))
+                conn.commit()
+            flash('Registration successful! Please log in.', 'success')
+            return redirect(url_for('login'))
+        except sqlite3.IntegrityError:
             flash('Username already exists.', 'danger')
             return render_template('register.html')
-
-        # Store user with hashed password
-        users[username] = {
-            'email': email,
-            'password': generate_password_hash(password)
-        }
-        flash('Registration successful! Please log in.', 'success')
-        return redirect(url_for('login'))
 
     return render_template('register.html')
 
@@ -91,8 +105,12 @@ def login():
         username = request.form.get('username')
         password = request.form.get('password')
 
-        user = users.get(username)
-        if not user or not check_password_hash(user['password'], password):
+        with sqlite3.connect('database.db') as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT password FROM users WHERE username = ?', (username,))
+            user = cursor.fetchone()
+
+        if not user or not check_password_hash(user[0], password):
             flash('Invalid username or password.', 'danger')
             return render_template('login.html')
 
