@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import re
@@ -22,6 +22,16 @@ def init_db():
 
 init_db()
 
+# Middleware to check if user is logged in
+def login_required(f):
+    def wrapper(*args, **kwargs):
+        if 'user_id' not in session:
+            flash('You need to sign up or log in to access this page.', 'warning')
+            return redirect(url_for('register'))
+        return f(*args, **kwargs)
+    wrapper.__name__ = f.__name__
+    return wrapper
+
 @app.route('/')
 def index():
     return render_template('index.html')  # Updated home page to include login and sign-up options
@@ -31,6 +41,7 @@ def about():
     return render_template('about.html')
 
 @app.route('/scan-image', methods=['GET', 'POST'])
+@login_required
 def scan_image():
     if request.method == 'POST':
         # Image scanning logic would go here
@@ -39,6 +50,7 @@ def scan_image():
     return render_template('scan_image.html')
 
 @app.route('/scan-link', methods=['GET', 'POST'])
+@login_required
 def scan_link():
     if request.method == 'POST':
         # Link scanning logic would go here
@@ -47,6 +59,7 @@ def scan_link():
     return render_template('scan_link.html')
 
 @app.route('/scan-file', methods=['GET', 'POST'])
+@login_required
 def scan_file():
     if request.method == 'POST':
         # File scanning logic would go here
@@ -55,11 +68,13 @@ def scan_file():
     return render_template('scan_file.html')
 
 @app.route('/scan-results')
+@login_required
 def scan_results():
     # This would display results from the last scan
     return render_template('scan_results.html')
 
 @app.route('/ai-assistant', methods=['GET', 'POST'])
+@login_required
 def ai_assistant():
     response = None
     if request.method == 'POST':
@@ -114,6 +129,7 @@ def login():
             flash('Invalid username or password.', 'danger')
             return render_template('login.html')
 
+        session['user_id'] = username  # Store the username in session
         flash('Login successful!', 'success')
         return redirect(url_for('index'))
 
