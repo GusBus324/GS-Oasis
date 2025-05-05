@@ -53,6 +53,25 @@
         .btn.primary:hover {
             background-color: #0056b3;
         }
+        .cta-section {
+            margin: 40px 0;
+            text-align: center;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        .cta-section h2 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        .cta-section p {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            color: #555;
+        }
+        .cta-section .btn {
+            margin: 0 10px;
+        }
     </style>
 </head>
 <body>
@@ -77,12 +96,6 @@
                 <a href="{{ url_for('ai_assistant') }}" class="btn btn-secondary">
                     <span class="icon">🤖</span> Ask Our AI
                 </a>
-            </div>
-            <div class="auth-section">
-                <p class="highlighted-text">
-                    Join our community today! <a href="{{ url_for('register') }}" class="btn primary">Sign Up</a> to access our services. 
-                    Already a member? <a href="{{ url_for('login') }}" class="btn secondary">Login</a> to continue.
-                </p>
             </div>
         </div>
     </section>
@@ -125,7 +138,7 @@
                 <p>Scams Identified</p>
             </div>
             <div class="stat-item">
-                <h3>5,000+</</h3>
+                <h3>5,000+</h3>
                 <p>Users Protected</p>
             </div>
             <div class="stat-item">
@@ -152,6 +165,13 @@
             </div>
         </div>
     </section>
+
+    <div class="cta-section">
+        <h2>Become a part of our thriving community!</h2>
+        <p>Sign up now to unlock exclusive services. Already a member? Log in to continue your journey with us.</p>
+        <a href="{{ url_for('register') }}" class="btn btn-primary">Sign Up</a>
+        <a href="{{ url_for('login') }}" class="btn btn-secondary">Log In</a>
+    </div>
     {% endblock %}
 </body>
 </html>
