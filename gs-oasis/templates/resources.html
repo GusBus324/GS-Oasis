@@ -3,38 +3,262 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resources</title>
+    <title>Resources - GS Oasis</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .hero.resources-hero {
+            padding: 100px 0;
+            background: linear-gradient(135deg, #1a2a6c 0%, #2a4798 100%);
+        }
+        
+        .jumbo-logo {
+            max-width: 300px;
+            width: 100%;
+            height: auto;
+            margin: 0 auto 40px;
+            display: block;
+            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
+            transition: transform 0.5s ease, filter 0.5s ease;
+        }
+        
+        .jumbo-logo:hover {
+            transform: scale(1.05);
+            filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.5));
+        }
+        
+        .stats-container {
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: var(--box-shadow);
+            padding: 40px;
+            margin-bottom: 60px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+        
+        .stat-card {
+            background: var(--light-color);
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            line-height: 1;
+        }
+        
+        .stat-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--accent-color);
+        }
+        
+        .stat-description {
+            font-size: 0.95rem;
+            color: var(--dark-color);
+        }
+        
+        .resources-section {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .mission-statement {
+            background-color: var(--light-color);
+            border-left: 5px solid var(--accent-color);
+            padding: 30px;
+            margin-bottom: 40px;
+            border-radius: 0 12px 12px 0;
+        }
+        
+        .mission-statement h2 {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+        
+        .resource-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .resource-card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+        
+        .resource-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .resource-card-header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 20px;
+        }
+        
+        .resource-card-body {
+            padding: 20px;
+        }
+        
+        .resource-card-body ul {
+            padding-left: 20px;
+            margin-top: 15px;
+        }
+        
+        .resource-card-body ul li {
+            margin-bottom: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .jumbo-logo {
+                max-width: 200px;
+            }
+            
+            .stats-grid, .resource-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
     {% include 'header.html' %}
+    
+    <section class="hero resources-hero">
+        <div class="hero-content">
+            <img src="{{ url_for('static', filename='images/Logo.png') }}" alt="GS Oasis Logo" class="jumbo-logo">
+            <h1>Resources & <span class="highlight">Scam Prevention</span></h1>
+            <p class="tagline">Your shield against digital threats in an ever-evolving online world</p>
+            <p class="subtitle">Empowering everyone, regardless of technical expertise, to navigate safely online</p>
+        </div>
+    </section>
+    
     <main>
-        <section class="resources">
-            <h1>Why Choose Our AI?</h1>
-            <p>Our AI is designed to be user-friendly, adaptable, and capable of addressing all your needs. Whether you're scanning files, links, or images, our AI ensures a seamless and secure experience.</p>
-
-            <div class="features">
-                <div class="feature-item">
-                    <h2>Intuitive Design</h2>
-                    <p>Our AI interface is simple and easy to use, ensuring that anyone can navigate it effortlessly.</p>
-                </div>
-                <div class="feature-item">
-                    <h2>Comprehensive Scanning</h2>
-                    <p>From files to links and images, our AI can handle it all, providing detailed and accurate results.</p>
-                </div>
-                <div class="feature-item">
-                    <h2>Secure and Reliable</h2>
-                    <p>Your data is safe with us. Our AI uses advanced security protocols to protect your information.</p>
+        <div class="resources-section">
+            <div class="mission-statement">
+                <h2>Our <span class="highlight">Mission</span></h2>
+                <p>At GS Oasis, we understand that not everyone has the technical knowledge to identify sophisticated scams. Our platform is specifically designed for people who find it challenging to recognize digital threats, providing intuitive tools that anyone can use to stay safe online.</p>
+            </div>
+            
+            <h2>The <span class="highlight">Scale of Online Scams</span></h2>
+            
+            <div class="stats-container">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">71%</div>
+                        <div class="stat-title">Image-Based Scams</div>
+                        <div class="stat-description">of consumers cannot identify manipulated or fraudulent images used in online scams, leading to financial loss and identity theft.</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-number">$10.3B</div>
+                        <div class="stat-title">Annual Losses</div>
+                        <div class="stat-description">is lost annually to various online scams including phishing, malware, and fraudulent websites globally.</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-number">92%</div>
+                        <div class="stat-title">Malware Distribution</div>
+                        <div class="stat-description">of malware is delivered via email and malicious file attachments, putting users at risk when downloading files.</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-number">350K</div>
+                        <div class="stat-title">New Threats Daily</div>
+                        <div class="stat-description">new malicious programs and potentially unwanted applications are registered every day, making it impossible to stay vigilant manually.</div>
+                    </div>
                 </div>
             </div>
-
-            <div class="cta">
-                <h2>Experience the Future of AI</h2>
-                <p>Try our AI today and see how it can simplify your digital life.</p>
-                <a href="/ai-assistant" class="btn primary">Get Started</a>
+            
+            <h2>How GS Oasis <span class="highlight">Protects You</span></h2>
+            
+            <div class="resource-grid">
+                <div class="resource-card">
+                    <div class="resource-card-header">
+                        <h3>Image Scanning Protection</h3>
+                    </div>
+                    <div class="resource-card-body">
+                        <p>Our advanced AI can detect various types of fraudulent images:</p>
+                        <ul>
+                            <li>Fake product listings with stolen or manipulated images</li>
+                            <li>Deepfakes used in sophisticated scams</li>
+                            <li>QR codes that lead to malicious websites</li>
+                            <li>Hidden text or metadata containing harmful content</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="resource-card">
+                    <div class="resource-card-header">
+                        <h3>Link Verification System</h3>
+                    </div>
+                    <div class="resource-card-body">
+                        <p>Our link scanner protects you from:</p>
+                        <ul>
+                            <li>Phishing websites that steal your personal information</li>
+                            <li>Fake banking or e-commerce sites</li>
+                            <li>Shortened URLs hiding malicious destinations</li>
+                            <li>Sites containing browser exploits or drive-by downloads</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="resource-card">
+                    <div class="resource-card-header">
+                        <h3>File Analysis Engine</h3>
+                    </div>
+                    <div class="resource-card-body">
+                        <p>Our file scanner identifies threats including:</p>
+                        <ul>
+                            <li>Ransomware that could lock your files and demand payment</li>
+                            <li>Trojans disguised as legitimate software</li>
+                            <li>Malicious macros in document files</li>
+                            <li>Zero-day threats not yet recognized by traditional antivirus</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
-        </section>
+            
+            <div class="cta-section" style="margin-top: 60px;">
+                <h2>Don't Face Online Threats Alone</h2>
+                <p>GS Oasis provides the tools and knowledge you need to stay safe online, even if you're not tech-savvy. Our intuitive interface and clear results make security accessible to everyone.</p>
+                {% if 'user_id' in session %}
+                <div class="cta-buttons">
+                    <a href="{{ url_for('scan_image') }}" class="btn btn-primary">Scan an Image</a>
+                    <a href="{{ url_for('scan_link') }}" class="btn btn-primary">Verify a Link</a>
+                    <a href="{{ url_for('scan_file') }}" class="btn btn-primary">Check a File</a>
+                    <a href="{{ url_for('ai_assistant') }}" class="btn btn-secondary">Ask Our AI Assistant</a>
+                </div>
+                {% else %}
+                <div class="cta-buttons">
+                    <a href="{{ url_for('register') }}" class="btn btn-primary">Sign Up for Protection</a>
+                    <a href="{{ url_for('login') }}" class="btn btn-secondary">Log In</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
     </main>
+    
     {% include 'footer.html' %}
 </body>
 </html>
