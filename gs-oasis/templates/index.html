@@ -8,6 +8,7 @@
     <style>
         body {
             background: linear-gradient(135deg, #e0f7fa 0%, #b3e5fc 50%, #81d4fa 100%);
+            overflow-x: hidden;
         }
         
         .animated-background {
@@ -20,6 +21,7 @@
             overflow: hidden;
         }
         
+        /* Enhanced floating bubbles */
         .floating-bubbles {
             position: absolute;
             top: 0;
@@ -30,29 +32,43 @@
         
         .bubble {
             position: absolute;
-            background-color: rgba(255, 255, 255, 0.3);
             border-radius: 50%;
             animation: float-bubble 25s infinite ease-in-out;
             box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
         }
         
+        .bubble-blue {
+            background: radial-gradient(circle at center, rgba(173, 216, 230, 0.7) 0%, rgba(173, 216, 230, 0.1) 70%);
+        }
+        
+        .bubble-white {
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.1) 70%);
+        }
+        
+        .bubble-cyan {
+            background: radial-gradient(circle at center, rgba(0, 255, 255, 0.5) 0%, rgba(0, 255, 255, 0.1) 70%);
+        }
+        
         @keyframes float-bubble {
             0% {
-                transform: translateY(100vh) scale(0.8);
+                transform: translateY(100vh) scale(0.8) rotate(0deg);
                 opacity: 0;
             }
             20% {
                 opacity: 0.5;
+                transform: translateY(80vh) scale(0.9) rotate(90deg);
             }
             80% {
                 opacity: 0.5;
+                transform: translateY(20vh) scale(1.1) rotate(270deg);
             }
             100% {
-                transform: translateY(-100px) scale(1.2);
+                transform: translateY(-100px) scale(1.2) rotate(360deg);
                 opacity: 0;
             }
         }
         
+        /* Wave effects */
         .wave {
             position: absolute;
             bottom: 0;
@@ -80,6 +96,17 @@
             bottom: 10px;
         }
         
+        .wave3 {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%2329b6f6" fill-opacity="0.1" d="M0,96L40,117.3C80,139,160,181,240,186.7C320,192,400,160,480,154.7C560,149,640,171,720,186.7C800,203,880,213,960,202.7C1040,192,1120,160,1200,154.7C1280,149,1360,171,1400,181.3L1440,192L1440,320L1400,320C1360,320,1280,320,1200,320C1120,320,1040,320,960,320C880,320,800,320,720,320C640,320,560,320,480,320C400,320,320,320,240,320C160,320,80,320,40,320L0,320Z"></path></svg>') repeat-x;
+            animation: wave-animation 15s linear infinite reverse;
+            z-index: 0;
+            opacity: 0.3;
+            animation-delay: -2s;
+            bottom: 0;
+            height: 120px;
+            background-size: 1440px 120px;
+        }
+        
         @keyframes wave-animation {
             0% {
                 background-position-x: 0;
@@ -89,26 +116,133 @@
             }
         }
         
+        /* Color shifting background gradient */
+        .color-shift {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+            background: linear-gradient(45deg, #4fc3f7, #29b6f6, #03a9f4, #039be5, #0288d1);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+        
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        
+        /* Light beams */
+        .light-beam {
+            position: absolute;
+            width: 200px;
+            height: 1500px;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 75%);
+            transform-origin: top;
+            animation: rotate-beam 20s infinite linear;
+            opacity: 0.6;
+        }
+        
+        @keyframes rotate-beam {
+            from {
+                transform: rotate(0deg) translateX(-50%) translateY(-50%);
+            }
+            to {
+                transform: rotate(360deg) translateX(-50%) translateY(-50%);
+            }
+        }
+        
+        /* Glassmorphism effects */
         .hero {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(5px);
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             border-radius: 20px;
             border: 1px solid rgba(255, 255, 255, 0.3);
             box-shadow: 0 8px 32px rgba(31, 38, 135, 0.2);
             padding: 40px;
             margin-top: 30px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .hero:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(31, 38, 135, 0.3);
         }
         
         .feature-card, .stat-item, .testimonial-card, .cta-section {
             background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
             border: 1px solid rgba(255, 255, 255, 0.3);
             box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .feature-card:hover, .stat-item:hover, .testimonial-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 12px 40px rgba(31, 38, 135, 0.2);
         }
         
         .highlight {
             color: #0277bd;
             text-shadow: 0 0 5px rgba(2, 119, 189, 0.3);
+            position: relative;
+            display: inline-block;
+        }
+        
+        .highlight::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #0277bd, transparent);
+            animation: shine 2s infinite;
+        }
+        
+        @keyframes shine {
+            0% {
+                background-position: -100% 0;
+            }
+            100% {
+                background-position: 200% 0;
+            }
+        }
+        
+        .btn-primary, .btn-secondary {
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .btn-primary::before, .btn-secondary::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 70%);
+            transform: translate(-50%, -50%) scale(0);
+            opacity: 0;
+            transition: transform 0.6s ease, opacity 0.6s ease;
+            z-index: -1;
+        }
+        
+        .btn-primary:hover::before, .btn-secondary:hover::before {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
         }
         
         .btn-primary {
@@ -143,16 +277,20 @@
 
     {% block content %}
     <div class="animated-background">
+        <div class="color-shift"></div>
         <div class="floating-bubbles" id="bubbles-container"></div>
+        <div class="light-beam" style="top: 20%; left: 10%;"></div>
+        <div class="light-beam" style="top: 30%; left: 80%;"></div>
         <div class="wave wave1"></div>
         <div class="wave wave2"></div>
+        <div class="wave wave3"></div>
     </div>
     
     <section class="hero">
         <div class="hero-content">
             <h1 style="text-align: center;">Welcome to <span class="highlight">GS Oasis</span></h1>
             <p class="tagline">Identify, counter, knowledge and improvement</p>
-            <p class="subtitle">We provide cutting-edge tools to identify threats, counter scams, and improve your online safety</p>
+            <p class="subtitle">Helping the less confident in this area</p>
             
             {% if 'user_id' in session %}
             <!-- Show feature buttons for logged in users -->
@@ -278,8 +416,8 @@
         document.addEventListener('DOMContentLoaded', function() {
             const bubblesContainer = document.getElementById('bubbles-container');
             
-            // Create floating bubbles
-            for (let i = 0; i < 30; i++) {
+            // Create floating bubbles with different colors
+            for (let i = 0; i < 40; i++) {
                 createBubble(bubblesContainer);
             }
             
@@ -287,8 +425,13 @@
                 const bubble = document.createElement('div');
                 bubble.className = 'bubble';
                 
-                // Random size between 10px and 60px
-                const size = 10 + Math.random() * 50;
+                // Add different bubble colors
+                const bubbleTypes = ['bubble-blue', 'bubble-white', 'bubble-cyan'];
+                const randomType = bubbleTypes[Math.floor(Math.random() * bubbleTypes.length)];
+                bubble.classList.add(randomType);
+                
+                // Random size between 10px and 80px
+                const size = 10 + Math.random() * 70;
                 bubble.style.width = `${size}px`;
                 bubble.style.height = `${size}px`;
                 
@@ -296,7 +439,7 @@
                 bubble.style.left = `${Math.random() * 100}%`;
                 
                 // Different speeds for different sized bubbles
-                const duration = 15 + (Math.random() * 30) - (size * 0.2);
+                const duration = 15 + (Math.random() * 30) - (size * 0.1);
                 bubble.style.animationDuration = `${duration}s`;
                 
                 // Random delay
@@ -306,6 +449,19 @@
                 // Add the bubble to the container
                 container.appendChild(bubble);
             }
+            
+            // Create periodic new bubbles for continuous effect
+            setInterval(() => {
+                if (document.querySelectorAll('.bubble').length < 50) {
+                    createBubble(bubblesContainer);
+                }
+            }, 2000);
+            
+            // Add light beam rotation
+            const beams = document.querySelectorAll('.light-beam');
+            beams.forEach((beam, index) => {
+                beam.style.animationDelay = `-${index * 5}s`;
+            });
         });
     </script>
 </body>
