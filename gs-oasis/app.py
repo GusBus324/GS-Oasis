@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import re
+from functools import wraps
 
 app = Flask(__name__)
 app.secret_key = "gs-oasis-secret-key"  # Required for flash messages
@@ -24,12 +25,12 @@ init_db()
 
 # Middleware to check if user is logged in
 def login_required(f):
+    @wraps(f)
     def wrapper(*args, **kwargs):
         if 'user_id' not in session:
-            flash('You need to sign up or log in to access this page.', 'warning')
-            return redirect(url_for('register'))
+            flash('You need to log in to access this page.', 'warning')
+            return redirect(url_for('login'))
         return f(*args, **kwargs)
-    wrapper.__name__ = f.__name__
     return wrapper
 
 @app.route('/')
