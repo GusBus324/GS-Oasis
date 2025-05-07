@@ -83,6 +83,9 @@
             <h1 style="text-align: center;">Welcome to <span class="highlight">GS Oasis</span></h1>
             <p class="tagline">Your digital shield against online scams and fraud</p>
             <p class="subtitle">We provide cutting-edge tools to identify, prevent, and protect you from digital threats</p>
+            
+            {% if 'user_id' in session %}
+            <!-- Show feature buttons for logged in users -->
             <div class="cta-buttons">
                 <a href="{{ url_for('scan_image') }}" class="btn btn-primary">
                     <span class="icon">🔍</span> Scan Image
@@ -97,6 +100,17 @@
                     <span class="icon">🤖</span> Ask Our AI
                 </a>
             </div>
+            {% else %}
+            <!-- Show auth buttons for guests -->
+            <div class="cta-buttons">
+                <a href="{{ url_for('register') }}" class="btn btn-primary">
+                    <span class="icon">🔐</span> Sign Up to Access Tools
+                </a>
+                <a href="{{ url_for('login') }}" class="btn btn-secondary">
+                    <span class="icon">👤</span> Log In
+                </a>
+            </div>
+            {% endif %}
         </div>
     </section>
 
@@ -107,25 +121,41 @@
                 <div class="card-icon">🖼️</div>
                 <h3>Image Analysis</h3>
                 <p>Our advanced AI detects manipulated images, fake listings, and phishing attempts hidden in photos.</p>
+                {% if 'user_id' in session %}
                 <a href="{{ url_for('scan_image') }}" class="btn-text">Scan an image →</a>
+                {% else %}
+                <a href="{{ url_for('register') }}" class="btn-text">Sign up to scan images →</a>
+                {% endif %}
             </div>
             <div class="feature-card">
                 <div class="card-icon">🔒</div>
                 <h3>Link Verification</h3>
                 <p>Stay safe online with our real-time URL checker that identifies phishing sites and malicious links.</p>
+                {% if 'user_id' in session %}
                 <a href="{{ url_for('scan_link') }}" class="btn-text">Verify a link →</a>
+                {% else %}
+                <a href="{{ url_for('register') }}" class="btn-text">Sign up to verify links →</a>
+                {% endif %}
             </div>
             <div class="feature-card">
                 <div class="card-icon">🛡️</div>
                 <h3>File Scanning</h3>
                 <p>Detect malware, ransomware, and suspicious code in files before they can harm your devices.</p>
+                {% if 'user_id' in session %}
                 <a href="{{ url_for('scan_file') }}" class="btn-text">Check a file →</a>
+                {% else %}
+                <a href="{{ url_for('register') }}" class="btn-text">Sign up to check files →</a>
+                {% endif %}
             </div>
             <div class="feature-card">
                 <div class="card-icon">💬</div>
                 <h3>AI Assistant</h3>
                 <p>Get instant answers to your security questions from our specialized scam-prevention AI.</p>
+                {% if 'user_id' in session %}
                 <a href="{{ url_for('ai_assistant') }}" class="btn-text">Ask a question →</a>
+                {% else %}
+                <a href="{{ url_for('register') }}" class="btn-text">Sign up to use AI assistant →</a>
+                {% endif %}
             </div>
         </div>
     </section>

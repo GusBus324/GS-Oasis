@@ -3,17 +3,184 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register</title>
+    <title>Register - GS Oasis</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        /* 3D perspective effect for the background logo */
+        .logo-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background-color: rgba(26, 42, 108, 0.03);
+            perspective: 1000px;
+            transition: transform 0.3s ease;
+        }
+        
+        .animated-logo {
+            width: 80%;
+            max-width: 800px;
+            opacity: 0.1;
+            filter: blur(2px);
+            animation: pulse-rotate 20s infinite ease-in-out;
+            transform-style: preserve-3d;
+        }
+        
+        @keyframes pulse-rotate {
+            0% {
+                transform: scale(0.9) rotate(0deg);
+                opacity: 0.1;
+            }
+            25% {
+                transform: scale(1.1) rotate(5deg);
+                opacity: 0.15;
+            }
+            50% {
+                transform: scale(0.95) rotate(0deg);
+                opacity: 0.1;
+            }
+            75% {
+                transform: scale(1.05) rotate(-5deg);
+                opacity: 0.15;
+            }
+            100% {
+                transform: scale(0.9) rotate(0deg);
+                opacity: 0.1;
+            }
+        }
+        
+        /* Particle effect around the corner logo */
+        .logo-corner-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 80px;
+            height: 80px;
+            z-index: 2;
+        }
+        
+        .logo-corner {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            animation: bounce 3s infinite ease-in-out;
+            z-index: 2;
+            transition: transform 0.3s ease, filter 0.3s ease;
+        }
+        
+        .logo-corner:hover {
+            transform: scale(1.5) rotate(10deg);
+            filter: drop-shadow(0 0 8px rgba(255, 140, 66, 0.8));
+            cursor: pointer;
+        }
+        
+        .particle {
+            position: absolute;
+            background-color: var(--accent-color);
+            border-radius: 50%;
+            opacity: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        @keyframes particle-animation {
+            0% {
+                transform: translate(0, 0);
+                opacity: 0.6;
+            }
+            100% {
+                transform: translate(var(--x), var(--y));
+                opacity: 0;
+            }
+        }
+        
+        .auth-container {
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 166, 183, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+            margin-top: 50px;
+            transform-style: preserve-3d;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .auth-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        .auth-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,140,66,0.1) 0%, rgba(255,255,255,0) 70%);
+            z-index: -1;
+            animation: rotate-gradient 15s linear infinite;
+        }
+        
+        @keyframes rotate-gradient {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        
+        h2 {
+            color: var(--primary-color);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-primary {
+            background: var(--gradient-primary);
+            border: none;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 15px rgba(26, 42, 108, 0.3);
+        }
+    </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </head>
 <body>
+    <!-- Large logo animation in the background -->
+    <div class="logo-background">
+        <img src="{{ url_for('static', filename='images/Logo.png') }}" alt="GS Oasis Logo" class="animated-logo">
+    </div>
+
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-6">
                 <div class="auth-container">
+                    <!-- Small logo in the corner with bounce animation -->
+                    <div class="logo-corner-container">
+                        <img src="{{ url_for('static', filename='images/Logo.png') }}" alt="GS Oasis Logo" class="logo-corner">
+                        <!-- Particle effects -->
+                        <div class="particle" style="width: 8px; height: 8px; --x: 20px; --y: 20px; animation: particle-animation 1.5s infinite;"></div>
+                        <div class="particle" style="width: 10px; height: 10px; --x: -15px; --y: 25px; animation: particle-animation 2s infinite;"></div>
+                        <div class="particle" style="width: 6px; height: 6px; --x: 10px; --y: -30px; animation: particle-animation 1.8s infinite;"></div>
+                    </div>
+                    
                     <h2>Join Our Community!</h2>
                     <p>Create an account to unlock exclusive features and services.</p>
                     <form method="POST" action="{{ url_for('register') }}">
@@ -40,12 +207,17 @@
             </div>
         </div>
     </div>
+    
     {% block scripts %}
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const passwordInput = document.getElementById('password');
             const signUpButton = document.querySelector('.btn-primary');
             const passwordRegex = /^(?=.*[0-9].*[0-9])(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{8,}$/;
+            const logoCorner = document.querySelector('.logo-corner');
+            const logoCornerContainer = document.querySelector('.logo-corner-container');
+            const animatedLogo = document.querySelector('.animated-logo');
+            const logoBackground = document.querySelector('.logo-background');
 
             function validatePassword() {
                 if (passwordRegex.test(passwordInput.value)) {
@@ -57,6 +229,79 @@
 
             passwordInput.addEventListener('input', validatePassword);
             validatePassword(); // Initial validation
+            
+            // 3D tilt effect for the background logo
+            document.addEventListener('mousemove', function(e) {
+                const x = e.clientX / window.innerWidth;
+                const y = e.clientY / window.innerHeight;
+                
+                // Move background slightly with mouse
+                logoBackground.style.transform = `translate(${x * 20 - 10}px, ${y * 20 - 10}px)`;
+                
+                // Apply 3D rotation to the logo
+                animatedLogo.style.transform = `rotateX(${y * 10 - 5}deg) rotateY(${x * 10 - 5}deg)`;
+            });
+            
+            // Create floating particles when hovering over the corner logo
+            logoCorner.addEventListener('mouseover', createParticles);
+            logoCorner.addEventListener('click', createParticles);
+            
+            function createParticles() {
+                // Clear existing particles
+                const existingParticles = document.querySelectorAll('.dynamic-particle');
+                existingParticles.forEach(p => p.remove());
+                
+                // Create new particles
+                for (let i = 0; i < 20; i++) {
+                    setTimeout(() => {
+                        const particle = document.createElement('div');
+                        particle.className = 'particle dynamic-particle';
+                        
+                        // Random size between 3px and 8px
+                        const size = 3 + Math.random() * 5;
+                        particle.style.width = `${size}px`;
+                        particle.style.height = `${size}px`;
+                        
+                        // Random position around the logo
+                        particle.style.left = `${20 + Math.random() * 20}px`;
+                        particle.style.top = `${20 + Math.random() * 20}px`;
+                        
+                        // Random direction
+                        const angle = Math.random() * Math.PI * 2;
+                        const distance = 30 + Math.random() * 70;
+                        const x = Math.cos(angle) * distance;
+                        const y = Math.sin(angle) * distance;
+                        
+                        particle.style.setProperty('--x', `${x}px`);
+                        particle.style.setProperty('--y', `${y}px`);
+                        
+                        // Animation duration between 1s and 2.5s
+                        const duration = 1 + Math.random() * 1.5;
+                        particle.style.animation = `particle-animation ${duration}s forwards`;
+                        
+                        // Random color variations
+                        const hue = 30 + Math.random() * 25; // Orange-ish (base color + variation)
+                        particle.style.backgroundColor = `hsl(${hue}, 100%, 60%)`;
+                        
+                        logoCornerContainer.appendChild(particle);
+                        
+                        // Remove particle after animation ends
+                        setTimeout(() => {
+                            particle.remove();
+                        }, duration * 1000);
+                    }, i * 50); // Stagger the creation of particles
+                }
+                
+                // Add a pulse effect to the form
+                const authContainer = document.querySelector('.auth-container');
+                authContainer.style.animation = 'pulse 0.5s';
+                setTimeout(() => {
+                    authContainer.style.animation = '';
+                }, 500);
+            }
+            
+            // Initial particle burst on page load
+            setTimeout(createParticles, 500);
         });
     </script>
     {% endblock %}

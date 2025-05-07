@@ -40,40 +40,94 @@ def index():
 def about():
     return render_template('about.html')
 
-@app.route('/scan-image', methods=['GET', 'POST'])
+@app.route('/scan_image', methods=['GET', 'POST'])
 @login_required
 def scan_image():
     if request.method == 'POST':
-        # Image scanning logic would go here
-        flash('Image scanned successfully!', 'success')
-        return redirect(url_for('scan_results'))
+        # Check if the post request has the file part
+        if 'image' not in request.files:
+            flash('No image part in the request', 'danger')
+            return redirect(request.url)
+            
+        file = request.files['image']
+        
+        # If user does not select file, browser may submit an empty file
+        if file.filename == '':
+            flash('No image selected', 'danger')
+            return redirect(request.url)
+            
+        if file:
+            # Process the image - this is where you'd run the actual scanning logic
+            # For now, we'll just simulate a successful scan
+            flash('Image scanned successfully!', 'success')
+            # You could save the scan results to the session or db for the results page
+            session['last_scan_type'] = 'image'
+            session['last_scan_result'] = 'No threats detected in your image.'
+            return redirect(url_for('scan_results'))
+            
     return render_template('scan_image.html')
 
-@app.route('/scan-link', methods=['GET', 'POST'])
+@app.route('/scan_link', methods=['GET', 'POST'])
 @login_required
 def scan_link():
     if request.method == 'POST':
-        # Link scanning logic would go here
+        link = request.form.get('link')
+        
+        if not link:
+            flash('No link provided', 'danger')
+            return redirect(request.url)
+            
+        # Process the link - this is where you'd run the actual link scanning logic
+        # For now, we'll just simulate a successful scan
         flash('Link scanned successfully!', 'success')
+        # Store scan results for the results page
+        session['last_scan_type'] = 'link'
+        session['last_scan_result'] = f'The link {link} appears to be safe.'
         return redirect(url_for('scan_results'))
+            
     return render_template('scan_link.html')
 
-@app.route('/scan-file', methods=['GET', 'POST'])
+@app.route('/scan_file', methods=['GET', 'POST'])
 @login_required
 def scan_file():
     if request.method == 'POST':
-        # File scanning logic would go here
-        flash('File scanned successfully!', 'success')
-        return redirect(url_for('scan_results'))
+        # Check if the post request has the file part
+        if 'file' not in request.files:
+            flash('No file part in the request', 'danger')
+            return redirect(request.url)
+            
+        file = request.files['file']
+        
+        # If user does not select file, browser may submit an empty file
+        if file.filename == '':
+            flash('No file selected', 'danger')
+            return redirect(request.url)
+            
+        if file:
+            # Process the file - this is where you'd run the actual file scanning logic
+            # For now, we'll just simulate a successful scan
+            flash('File scanned successfully!', 'success')
+            # Store scan results for the results page
+            session['last_scan_type'] = 'file'
+            session['last_scan_result'] = f'No threats detected in {file.filename}.'
+            return redirect(url_for('scan_results'))
+            
     return render_template('scan_file.html')
 
-@app.route('/scan-results')
+@app.route('/scan_results')
 @login_required
 def scan_results():
-    # This would display results from the last scan
-    return render_template('scan_results.html')
+    # Get scan results from session
+    scan_type = session.get('last_scan_type', None)
+    result = session.get('last_scan_result', 'No scan results available.')
+    
+    if not scan_type:
+        flash('No scan results found. Please perform a scan first.', 'warning')
+        return redirect(url_for('index'))
+        
+    return render_template('scan_results.html', scan_type=scan_type, result=result)
 
-@app.route('/ai-assistant', methods=['GET', 'POST'])
+@app.route('/ai_assistant', methods=['GET', 'POST'])
 @login_required
 def ai_assistant():
     response = None
@@ -146,6 +200,13 @@ def static_files(filename):
 @app.route('/logo.png')
 def logo():
     return send_from_directory('static/images', 'Logo.png')
+
+@app.route('/logout')
+def logout():
+    # Clear the session
+    session.clear()
+    flash('You have been logged out successfully.', 'success')
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run(debug=True)

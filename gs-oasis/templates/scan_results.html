@@ -1,12 +1,79 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scan Results</title>
-</head>
-<body>
-    <h1>Scan Results Page</h1>
-    <p>This is a placeholder for the Scan Results page.</p>
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="results">
+    <h1>Scan Results</h1>
+    
+    <div class="result-card">
+        {% if scan_type == 'image' %}
+            <div class="result-icon">🖼️</div>
+            <h2>Image Scan Results</h2>
+        {% elif scan_type == 'link' %}
+            <div class="result-icon">🔗</div>
+            <h2>Link Scan Results</h2>
+        {% elif scan_type == 'file' %}
+            <div class="result-icon">📄</div>
+            <h2>File Scan Results</h2>
+        {% else %}
+            <div class="result-icon">🔍</div>
+            <h2>Scan Results</h2>
+        {% endif %}
+        
+        <div class="result-content">
+            <p class="result-message">{{ result }}</p>
+        </div>
+        
+        <div class="result-actions">
+            {% if scan_type == 'image' %}
+                <a href="{{ url_for('scan_image') }}" class="btn btn-secondary">Scan Another Image</a>
+            {% elif scan_type == 'link' %}
+                <a href="{{ url_for('scan_link') }}" class="btn btn-secondary">Scan Another Link</a>
+            {% elif scan_type == 'file' %}
+                <a href="{{ url_for('scan_file') }}" class="btn btn-secondary">Scan Another File</a>
+            {% endif %}
+            <a href="{{ url_for('index') }}" class="btn btn-primary">Back to Home</a>
+        </div>
+    </div>
+</section>
+
+<style>
+    .results {
+        padding: 30px 0;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .result-card {
+        background-color: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    
+    .result-icon {
+        font-size: 3rem;
+        margin-bottom: 15px;
+    }
+    
+    .result-content {
+        margin: 25px 0;
+        padding: 20px;
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        text-align: left;
+    }
+    
+    .result-message {
+        font-size: 1.1rem;
+        line-height: 1.6;
+    }
+    
+    .result-actions {
+        margin-top: 20px;
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+    }
+</style>
+{% endblock %}

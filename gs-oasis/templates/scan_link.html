@@ -1,25 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scan Link</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
-    {% include 'header.html' %}
-    <main>
-        <section class="scanner">
-            <h1>Scan Link</h1>
-            <p>Enter a URL to scan for potential threats.</p>
-            <form action="/scan-link" method="POST">
-                <div class="input-box">
-                    <input type="url" name="link" placeholder="Enter URL here" required>
-                </div>
-                <button type="submit" class="btn primary">Scan Link</button>
-            </form>
-        </section>
-    </main>
-    {% include 'footer.html' %}
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="scanner">
+    <h1>Scan Link</h1>
+    <p>Enter a URL to scan for potential threats.</p>
+    <form action="{{ url_for('scan_link') }}" method="POST">
+        <div class="input-box">
+            <input type="url" name="link" placeholder="Enter URL here" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Scan Link</button>
+    </form>
+</section>
+{% endblock %}
