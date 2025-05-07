@@ -1,31 +1,155 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-</head>
-<body>
-    <div class="auth-container">
-        <h2>Welcome Back!</h2>
-        <p>Log in to access your account and explore our services.</p>
-        <form method="POST" action="{{ url_for('login') }}">
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" class="form-control" placeholder="Enter your username" required>
-            </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" class="form-control" placeholder="Enter your password" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Log In</button>
-        </form>
-        <p class="auth-footer">Don't have an account? <a href="{{ url_for('register') }}">Sign Up</a></p>
+<div class="login-wrapper">
+    <!-- Animated background elements -->
+    <div class="animated-background">
+        <div class="floating-particles"></div>
+        <div class="wave wave1"></div>
+        <div class="wave wave2"></div>
+        <div class="wave wave3"></div>
+        <div class="circle-container">
+            <div class="circle circle1"></div>
+            <div class="circle circle2"></div>
+            <div class="circle circle3"></div>
+        </div>
     </div>
-</body>
-</html>
+
+    <!-- Corner logo with animation -->
+    <div class="corner-logo-container">
+        <img src="{{ url_for('static', filename='images/Logo.png') }}" alt="GS Oasis Logo" class="corner-logo">
+    </div>
+
+    <div class="auth-container login-container">
+        <div class="welcome-animation">
+            <div class="welcome-text">Welcome Back!</div>
+            <div class="security-shield">
+                <div class="shield-icon">🛡️</div>
+                <div class="pulse-ring"></div>
+            </div>
+        </div>
+        
+        <h2>Sign in to GS Oasis</h2>
+        <p class="subtitle">Your trusted guardian against online threats</p>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <form method="POST" action="{{ url_for('login') }}" class="login-form">
+            <div class="form-group">
+                <label for="username">
+                    <span class="icon">👤</span>
+                    Username
+                </label>
+                <input type="text" id="username" name="username" class="form-control" placeholder="Enter your username" required>
+                <div class="focus-border"></div>
+            </div>
+            <div class="form-group">
+                <label for="password">
+                    <span class="icon">🔒</span>
+                    Password
+                </label>
+                <input type="password" id="password" name="password" class="form-control" placeholder="Enter your password" required>
+                <div class="focus-border"></div>
+            </div>
+            <button type="submit" class="btn btn-primary login-btn">
+                <span class="btn-text">Log In</span>
+                <span class="btn-icon">→</span>
+            </button>
+        </form>
+        
+        <div class="community-highlights">
+            <div class="highlight-item">
+                <div class="highlight-icon">🛡️</div>
+                <div class="highlight-text">Join 5,000+ protected users</div>
+            </div>
+            <div class="highlight-item">
+                <div class="highlight-icon">✅</div>
+                <div class="highlight-text">Access all protection tools</div>
+            </div>
+            <div class="highlight-item">
+                <div class="highlight-icon">🤖</div>
+                <div class="highlight-text">AI Assistant available 24/7</div>
+            </div>
+        </div>
+        
+        <p class="auth-footer">Don't have an account? <a href="{{ url_for('register') }}" class="register-link">Sign Up</a></p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Create floating particles
+        const particlesContainer = document.querySelector('.floating-particles');
+        for (let i = 0; i < 50; i++) {
+            createParticle(particlesContainer);
+        }
+        
+        // Add interactive effect to corner logo
+        const cornerLogo = document.querySelector('.corner-logo');
+        cornerLogo.addEventListener('mouseover', function() {
+            this.style.transform = 'rotate(10deg) scale(1.2)';
+            setTimeout(() => {
+                this.style.transform = 'rotate(0deg) scale(1)';
+            }, 500);
+        });
+        
+        // Add focus effects to input fields
+        const inputs = document.querySelectorAll('.form-control');
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('focused');
+            });
+            input.addEventListener('blur', function() {
+                if (this.value === '') {
+                    this.parentElement.classList.remove('focused');
+                }
+            });
+        });
+        
+        // Add hover effect to login button
+        const loginBtn = document.querySelector('.login-btn');
+        loginBtn.addEventListener('mouseover', function() {
+            this.querySelector('.btn-icon').style.transform = 'translateX(5px)';
+        });
+        loginBtn.addEventListener('mouseout', function() {
+            this.querySelector('.btn-icon').style.transform = 'translateX(0)';
+        });
+    });
+    
+    function createParticle(container) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        
+        // Random size between 5px and 15px
+        const size = 5 + Math.random() * 10;
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        
+        // Random position
+        particle.style.left = `${Math.random() * 100}%`;
+        particle.style.top = `${Math.random() * 100}%`;
+        
+        // Random opacity and scale for depth effect
+        particle.style.opacity = 0.1 + Math.random() * 0.4;
+        particle.style.transform = `scale(${0.6 + Math.random() * 0.4})`;
+        
+        // Random animation duration
+        const duration = 15 + Math.random() * 20;
+        particle.style.animationDuration = `${duration}s`;
+        
+        // Random delay
+        const delay = Math.random() * 10;
+        particle.style.animationDelay = `-${delay}s`;
+        
+        container.appendChild(particle);
+    }
+</script>
 {% endblock %}
