@@ -1,0 +1,7 @@
+/* Add background image for the sign-up page */
+.register-page {
+    background: url('/static/images/Logo.png') no-repeat center center fixed;
+    background-size: cover;
+}
+
+/* ...existing code... */

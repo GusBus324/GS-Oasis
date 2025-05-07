@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import re
@@ -138,6 +138,14 @@ def login():
 @app.route('/users')
 def users_list():
     return render_template('users.html', users=users)
+
+@app.route('/static/<path:filename>')
+def static_files(filename):
+    return send_from_directory('static', filename)
+
+@app.route('/logo.png')
+def logo():
+    return send_from_directory('static/images', 'Logo.png')
 
 if __name__ == '__main__':
     app.run(debug=True)
