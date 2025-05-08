@@ -1,0 +1,7 @@
+flask==2.3.3
+werkzeug==2.3.7
+pillow==10.0.0
+pypdf2==3.0.1
+pytesseract==0.3.10
+numpy==1.24.3
+opencv-python==4.8.0.74
