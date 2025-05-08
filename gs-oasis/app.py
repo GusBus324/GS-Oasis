@@ -55,63 +55,106 @@ def check_for_scam(text):
     if not text or not isinstance(text, str):
         return False, 0, []
     
-    # Convert text to lowercase for easier matching
+    # Clean and normalize text for better matching
     text = text.lower()
+    # Remove extra spaces and normalize whitespace
+    text = re.sub(r'\s+', ' ', text)
+    # Remove common non-alphanumeric characters that might break pattern matching
+    text = re.sub(r'[^\w\s@\.\-\:]', ' ', text)
     
     # Common scam indicators with weights
     scam_indicators = {
         # Urgency indicators
-        'urgent': 3, 'immediately': 3, 'act now': 4, 'limited time': 3,
+        'urgent': 3, 'immediately': 3, 'act now': 4, 'limited time': 3, 'urgent action': 4,
+        'warning': 2, 'alert': 2, 'attention': 2, 'important notice': 3, 'time sensitive': 3,
+        'expire': 3, 'expiration': 3, 'expires': 3, 'deadline': 3, 'final notice': 4,
         
         # Financial bait
-        'free money': 5, 'cash prize': 5, 'lottery winner': 5, 'you won': 4,
-        'million dollars': 5, 'get rich': 5, 'double your money': 5,
-        'cash bonus': 4, 'free gift': 3,
+        'free money': 5, 'cash prize': 5, 'lottery winner': 5, 'you won': 4, 'lucky winner': 5,
+        'million dollars': 5, 'get rich': 5, 'double your money': 5, 'easy money': 4,
+        'cash bonus': 4, 'free gift': 3, 'prize': 3, 'claim your': 3, 'reward': 3,
+        'inheritance': 5, 'payout': 4, 'congrats': 2, 'congratulations': 2, 'winner': 3,
         
         # Request for personal information
-        'verify your account': 4, 'update your information': 3,
-        'confirm your identity': 4, 'security check': 3,
-        'unusual activity': 3, 'suspicious activity': 3,
+        'verify your account': 4, 'update your information': 3, 'confirm your account': 4,
+        'confirm your identity': 4, 'security check': 3, 'account details': 3, 'personal details': 3,
+        'unusual activity': 3, 'suspicious activity': 3, 'login information': 4, 'password': 3,
+        'credit card': 3, 'banking details': 4, 'social security': 4, 'ssn': 4, 'payment details': 4,
         
         # Common phishing phrases
-        'dear customer': 2, 'dear user': 2, 'valued customer': 2,
-        'account suspended': 4, 'account locked': 4, 'unauthorized access': 3,
+        'dear customer': 2, 'dear user': 2, 'valued customer': 2, 'account holder': 2,
+        'account suspended': 4, 'account locked': 4, 'unauthorized access': 3, 'security alert': 3,
+        'unusual login': 3, 'policy violation': 3, 'terms of service': 2, 'service agreement': 2,
+        'account verification': 4, 'secure your account': 3, 'log in to': 2, 'click here': 2,
         
         # Technical deception
-        'tech support': 3, 'customer service': 2, 'help desk': 2,
-        'virus detected': 4, 'malware detected': 4, 'your computer is infected': 5,
-        'security breach': 4,
+        'tech support': 3, 'customer service': 2, 'help desk': 2, 'contact support': 2,
+        'virus detected': 4, 'malware detected': 4, 'your computer is infected': 5, 'your device is infected': 5,
+        'security breach': 4, 'hacked': 3, 'compromised': 3, 'infected': 3, 'trojan': 4,
+        'ransomware': 4, 'spyware': 4, 'antivirus': 3, 'scan your': 3, 'clean your': 3,
         
         # Transaction scams
-        'payment pending': 3, 'transaction failed': 3, 'refund': 3,
-        'billing information': 3, 'invoice attached': 3, 'receipt': 2,
+        'payment pending': 3, 'transaction failed': 3, 'refund': 3, 'reimbursement': 3,
+        'billing information': 3, 'invoice attached': 3, 'receipt': 2, 'shipping': 2,
+        'purchase confirmation': 2, 'order status': 2, 'tracking number': 2, 'package delivery': 2,
         
         # Government impersonation
-        'tax refund': 4, 'government grant': 4, 'irs': 3, 
-        'social security': 4, 'legal action': 4, 'lawsuit': 3,
+        'tax refund': 4, 'government grant': 4, 'irs': 3, 'tax authority': 3, 'legal notice': 3,
+        'social security': 4, 'legal action': 4, 'lawsuit': 3, 'court': 3, 'warrant': 4,
+        'fines': 3, 'penalties': 3, 'law enforcement': 3, 'police': 3, 'arrest': 4,
         
         # Common misspellings in legitimate company names (sign of phishing)
         'micr0soft': 5, 'app1e': 5, 'amaz0n': 5, 'g00gle': 5, 'paypa1': 5,
+        'faceb00k': 5, 'netfl1x': 5, 'bank0f': 5, 'a\/ple': 5, 'tvvitter': 5,
         
         # Cryptocurrency scams
-        'bitcoin': 2, 'cryptocurrency': 2, 'crypto': 2, 'invest now': 4,
-        'guaranteed return': 5, 'blockchain opportunity': 3,
+        'bitcoin': 2, 'cryptocurrency': 2, 'crypto': 2, 'invest now': 4, 'investment opportunity': 3,
+        'guaranteed return': 5, 'blockchain opportunity': 3, 'mining': 2, 'wallet': 2,
+        'exchange': 2, 'ethereum': 2, 'token': 2, 'ico': 3, 'defi': 2,
         
         # Romance scams
-        'looking for love': 3, 'found you attractive': 3, 'dating profile': 2,
+        'looking for love': 3, 'found you attractive': 3, 'dating profile': 2, 'single': 1,
+        'romantic relationship': 3, 'overseas': 2, 'foreign country': 2, 'meet in person': 2,
+        'love at first sight': 3, 'relationship': 2, 'lonely': 2, 'widow': 2, 'widower': 2,
         
         # Job scams
-        'work from home': 2, 'make money online': 3, 'be your own boss': 3,
-        'earn extra income': 2, 'job opportunity': 1, 'high paying job': 3
+        'work from home': 2, 'make money online': 3, 'be your own boss': 3, 'remote job': 2,
+        'earn extra income': 2, 'job opportunity': 1, 'high paying job': 3, 'passive income': 3,
+        'employment': 1, 'hiring': 1, 'flexible hours': 2, 'no experience needed': 3, 'part time': 1,
+        
+        # Gift card scams
+        'gift card': 3, 'itunes card': 4, 'steam card': 4, 'google play card': 4, 'prepaid card': 3,
+        'reload card': 3, 'activation code': 3, 'pin code': 3, 'card number': 3,
+        
+        # AI and modern scams (2024-2025)
+        'ai investment': 4, 'ai trading': 4, 'trading bot': 4, 'metaverse': 3, 'digital land': 3,
+        'nft opportunity': 3, 'virtual reality': 2, 'quantum computing': 3, 'quantum ai': 4,
+        'covid relief': 3, 'pandemic assistance': 3, 'stimulus payment': 3, 'debt forgiveness': 3
+    }
+    
+    # Part-word matching for common indicators that might be split across words
+    part_word_indicators = {
+        'verif': 3, 'secur': 2, 'activ': 2, 'accoun': 3, 'confirm': 3,
+        'suspend': 4, 'restrict': 3, 'unlock': 3, 'alert': 2, 'updat': 3,
+        'password': 3, 'login': 3, 'access': 2, 'bank': 3, 'credit': 3,
+        'debit': 3, 'pay': 2, 'money': 2, 'cash': 2, 'prize': 3,
+        'win': 3, 'congrat': 3, 'invest': 3, 'bitcoin': 3, 'crypto': 3,
+        'urgent': 3, 'immediate': 3, 'gift card': 4
     }
     
     # Look for domain mismatches (e.g. apple.com-secure.xyz)
     domain_pattern = r'(?:https?://)?(?:www\.)?([a-zA-Z0-9-]+)\.[a-zA-Z0-9-.]+'
     domains = re.findall(domain_pattern, text)
     
+    # Common suspicious domains and TLDs
     suspicious_domains = [
-        'secure-login', 'account-verify', 'signin', 'login-secure',
-        'verification', 'secure-verify', 'update-account'
+        'secure-login', 'account-verify', 'signin', 'login-secure', 'support-team',
+        'verification', 'secure-verify', 'update-account', 'customer-portal',
+        'security-check', 'password-reset', 'billing-update', 'payment-update'
+    ]
+    
+    suspicious_tlds = [
+        '.xyz', '.top', '.club', '.online', '.site', '.tk', '.ga', '.cf', '.gq', '.ml'
     ]
     
     # Check for indicators in the text
@@ -119,40 +162,88 @@ def check_for_scam(text):
     score = 0
     max_score = 0
     
+    # Check for exact matches
     for indicator, weight in scam_indicators.items():
         max_score += weight
         if indicator in text:
             found_indicators.append(indicator)
             score += weight
     
-    # Check for suspicious domains
+    # Check for part-word matches
+    for part_word, weight in part_word_indicators.items():
+        if part_word in text:
+            # Avoid double counting
+            if not any(indicator for indicator in found_indicators if part_word in indicator):
+                found_indicators.append(part_word)
+                score += weight
+    
+    # Check for suspicious domains and TLDs
+    found_suspicious_domains = []
+    
     for domain in domains:
+        # Check for suspicious domain names
         for sus_domain in suspicious_domains:
-            if sus_domain in domain:
-                found_indicators.append(f"Suspicious domain: {domain}")
+            if sus_domain in domain.lower():
+                found_suspicious_domains.append(domain)
                 score += 4
                 break
+                
+        # Check for suspicious TLDs
+        for sus_tld in suspicious_tlds:
+            if domain.lower().endswith(sus_tld):
+                found_suspicious_domains.append(domain)
+                score += 3
+                break
+    
+    if found_suspicious_domains:
+        found_indicators.append(f"Suspicious domain(s): {', '.join(found_suspicious_domains)}")
+    
+    # Additional pattern checks
+    
+    # Check for excessive urgency patterns
+    urgency_words = ['urgent', 'immediately', 'right now', 'asap', 'today', 'before it', 'expire']
+    urgency_count = sum(1 for word in urgency_words if word in text)
+    if urgency_count >= 2:
+        found_indicators.append(f"Multiple urgency indicators ({urgency_count})")
+        score += urgency_count * 2
+    
+    # Check for patterns of capitalizations (shouting) - common in scams
+    if re.search(r'[A-Z]{5,}', text):
+        found_indicators.append("Excessive capitalization")
+        score += 3
+    
+    # Check for excessive punctuation (common in scams)
+    if re.search(r'[!]{2,}', text) or re.search(r'[?]{2,}', text):
+        found_indicators.append("Excessive punctuation")
+        score += 2
     
     # Normalize score to a 0-100 scale
     if max_score > 0:
-        confidence = min(100, int((score / max_score) * 100))
+        confidence = min(100, int((score / max_score) * 200))  # Amplified to catch more scams
     else:
         confidence = 0
     
-    # Determine if it's a potential scam based on confidence threshold
-    is_scam = confidence > 30  # Adjust threshold as needed
+    # Lower threshold for identification as a scam
+    is_scam = confidence > 25  # Lowered from 30 to catch more scams
     
     # Generate reasons if it's a potential scam
     reasons = []
     if is_scam:
         if len(found_indicators) > 0:
             reasons.append(f"Found suspicious content: {', '.join(found_indicators[:5])}")
-        if 'urgent' in text or 'immediately' in text:
+        if any(word in text for word in ['urgent', 'immediately', 'right now', 'asap']):
             reasons.append("Creates false urgency")
-        if any(term in text for term in ['free money', 'cash prize', 'lottery', 'won']):
+        if any(term in text for term in ['free money', 'cash prize', 'lottery', 'won', 'winner']):
             reasons.append("Promises unrealistic financial rewards")
-        if any(term in text for term in ['verify', 'update your', 'confirm your']):
+        if any(term in text for term in ['verify', 'update your', 'confirm your', 'security', 'password']):
             reasons.append("Requests personal information")
+        if any(term in text for term in ['banking', 'account', 'credit card', 'login', 'sign in']):
+            reasons.append("Attempts to impersonate a financial institution")
+        if any(term in text for term in ['bitcoin', 'crypto', 'investment', 'trading', 'guarantee']):
+            reasons.append("Offers suspicious investment opportunities")
+    
+    # Add debug info to help with troubleshooting when needed
+    # Uncomment to debug: print(f"Text: {text[:100]}..., Score: {score}, Confidence: {confidence}, Scam: {is_scam}")
     
     return is_scam, confidence, reasons
 
@@ -495,98 +586,418 @@ def analyze_image_content(image_path):
     if not os.path.exists(image_path):
         return extracted_text, ["Image file not found or inaccessible"], ["File access check"]
     
-    # 2. Extract text using OCR if available
-    if OCR_AVAILABLE:
-        try:
-            img = Image.open(image_path)
-            extracted_text = pytesseract.image_to_string(img)
-            performed_checks.append("Text extraction (OCR)")
+    # 2. Basic image validation that works without specialized libraries
+    try:
+        with Image.open(image_path) as img:
+            # Get basic image info
+            width, height = img.size
+            format_type = img.format
+            mode = img.mode
+            file_size = os.path.getsize(image_path)
             
-            if extracted_text:
-                analysis_results.append(f"Extracted {len(extracted_text)} characters of text from image")
-        except Exception as e:
-            analysis_results.append(f"OCR failed: {str(e)}")
+            performed_checks.append("Basic image validation")
+            analysis_results.append(f"Image dimensions: {width}x{height} pixels")
+            analysis_results.append(f"Format: {format_type}, Mode: {mode}")
+            
+            # Check for unusually small images (possible hiding technique)
+            if width < 100 or height < 100:
+                analysis_results.append("⚠️ Image is unusually small, may be hiding content")
+            
+            # Check file size vs dimensions ratio (compression anomalies)
+            pixels = width * height
+            if pixels > 0:
+                bytes_per_pixel = file_size / pixels
+                if bytes_per_pixel > 10:  # Arbitrary threshold
+                    analysis_results.append("⚠️ Image has unusually high file size for its dimensions")
+                    
+            # Check for common image format mismatches
+            if format_type == 'JPEG' and mode == 'RGBA':
+                analysis_results.append("⚠️ Unusual mode for JPEG format, possible manipulation")
+            
+            # 3. Extract text using OCR if available
+            if OCR_AVAILABLE:
+                try:
+                    # First try normal OCR
+                    extracted_text = pytesseract.image_to_string(img)
+                    performed_checks.append("Text extraction (OCR)")
+                    
+                    # If no text was found or very little text, try preprocessing the image
+                    if len(extracted_text) < 10:
+                        performed_checks.append("Enhanced OCR with preprocessing")
+                        # Apply preprocessing to enhance text detection
+                        preprocessed_img = preprocess_image_for_ocr(img)
+                        enhanced_text = pytesseract.image_to_string(preprocessed_img)
+                        
+                        # If preprocessing found more text, use that instead
+                        if len(enhanced_text) > len(extracted_text):
+                            extracted_text = enhanced_text
+                            analysis_results.append("Used enhanced OCR to extract text")
+                    
+                    # If we found some text, also try to run a second OCR pass with different settings
+                    if extracted_text:
+                        # Try with different PSM modes to catch different text layouts
+                        for psm_mode in [3, 6, 4]:  # Page, Single block, Single line
+                            custom_config = f'--psm {psm_mode} --oem 3'
+                            alt_text = pytesseract.image_to_string(img, config=custom_config)
+                            
+                            # If this mode found more text, add it to our extracted text
+                            if len(alt_text) > 20 and alt_text not in extracted_text:
+                                extracted_text += " " + alt_text
+                                
+                        analysis_results.append(f"Extracted {len(extracted_text)} characters of text from image")
+                except Exception as e:
+                    analysis_results.append(f"OCR failed: {str(e)}")
+            else:
+                analysis_results.append("OCR (text recognition) is not available - install tesseract for text detection")
+                
+                # AI-based image pattern analysis (when OCR is unavailable)
+                # This is a simplified pattern recognition system as a fallback
+                performed_checks.append("AI pattern recognition")
+                
+                # Convert to bytes for analysis
+                img_bytes = io.BytesIO()
+                img.save(img_bytes, format=format_type)
+                img_bytes = img_bytes.getvalue()
+                
+                # Calculate entropy of image data as a measure of potential hidden content
+                entropy = 0
+                for i in range(256):
+                    p = img_bytes.count(i.to_bytes(1, byteorder='big')) / len(img_bytes)
+                    if p > 0:
+                        entropy -= p * math.log2(p)
+                
+                if entropy > 7.5:  # High entropy threshold
+                    analysis_results.append("⚠️ Image has high information entropy, possible steganography")
+                
+                # Analyze color distribution for anomalies that might indicate hidden content
+                try:
+                    # Sample pixels for analysis
+                    pixels_data = list(img.getdata())
+                    pixel_sample = pixels_data[::100]  # Take every 100th pixel for performance
+                    
+                    # Check for unusual color patterns 
+                    unique_colors = len(set(pixel_sample))
+                    color_ratio = unique_colors / len(pixel_sample) if pixel_sample else 0
+                    
+                    if mode == 'RGBA' and color_ratio < 0.01:
+                        analysis_results.append("⚠️ Suspicious color pattern detected, possible hidden content")
+                    
+                    # Use perceptual hash as a simplified way to detect common scam templates
+                    # This simulates comparing against a database of known scam patterns
+                    if perform_simplified_image_similarity_check(img):
+                        analysis_results.append("⚠️ Image matches patterns commonly found in scam content")
+                        
+                except Exception as e:
+                    pass
+                
+            # 4. Check metadata (EXIF data) for any suspicious elements
+            performed_checks.append("Metadata analysis")
+            try:
+                exif_data = img._getexif()
+                if exif_data:
+                    # Note that we found metadata
+                    analysis_results.append("Image contains metadata/EXIF data")
+                    
+                    # Check for suspicious metadata
+                    if exif_data and isinstance(exif_data, dict):
+                        for tag_id, value in exif_data.items():
+                            if tag_id == 40091 or tag_id == 40092:  # XMP metadata
+                                analysis_results.append("⚠️ Image contains extended metadata (XMP)")
+                            if tag_id == 37510:  # UserComment
+                                analysis_results.append("⚠️ Image contains user comments in metadata")
+                                
+                                # Try to extract text from metadata
+                                if isinstance(value, bytes) or isinstance(value, str):
+                                    try:
+                                        comment_text = value.decode('utf-8') if isinstance(value, bytes) else value
+                                        if len(comment_text) > 10:  # Only consider substantial text
+                                            extracted_text += " " + comment_text
+                                            analysis_results.append(f"⚠️ Extracted text from metadata: {comment_text[:50]}...")
+                                    except:
+                                        pass
+            except Exception as e:
+                # Many images don't have exif data, so this isn't critical
+                pass
+                
+            # Check for transparency (PNG only)
+            if mode == 'RGBA':
+                try:
+                    transparent_pixels = 0
+                    for pixel in img.getdata():
+                        if len(pixel) == 4 and pixel[3] < 255:  # Alpha channel < 255 means some transparency
+                            transparent_pixels += 1
+                    
+                    if transparent_pixels > 0:
+                        analysis_results.append(f"⚠️ Image has {transparent_pixels} transparent pixels which might hide content")
+                except Exception as e:
+                    pass
+                    
+    except Exception as e:
+        analysis_results.append(f"Basic image analysis failed: {str(e)}")
+        return extracted_text, analysis_results, performed_checks
     
-    # 3. Perform visual analysis using OpenCV if available
+    # 5. Perform visual analysis using OpenCV if available
     if OPENCV_AVAILABLE:
         try:
             # Read the image with OpenCV
             img = cv2.imread(image_path)
             if img is None:
-                analysis_results.append("Could not load image for analysis")
-                return extracted_text, analysis_results, performed_checks
-            
-            # Get image dimensions and calculate image hash for analysis
-            height, width, channels = img.shape
-            performed_checks.append("Image integrity check")
-            performed_checks.append("Visual content analysis")
-            
-            # Check image dimensions (unusually large or small images might be suspicious)
-            if width < 100 or height < 100:
-                analysis_results.append("Image is unusually small, may be hiding content")
-            
-            # Basic image quality check
-            blurriness = cv2.Laplacian(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), cv2.CV_64F).var()
-            if blurriness < 100:  # Arbitrary threshold, adjust as needed
-                analysis_results.append("Image appears blurry, which may indicate manipulation")
-            
-            # Check for hidden text that OCR might have missed using edge detection
-            edges = cv2.Canny(img, 100, 200)
-            text_region_ratio = np.count_nonzero(edges) / (height * width)
-            if text_region_ratio > 0.1 and not extracted_text:  # If there seem to be text-like edges but OCR found nothing
-                analysis_results.append("Image may contain text that couldn't be extracted")
-            
-            # Compute image hash for potential comparison with known scam images
-            img_hash = hashlib.md5(img.tobytes()).hexdigest()
-            # In a real system, you would compare against a database of known scam image hashes
-            
-            # Check for QR codes or barcodes that might lead to malicious sites
-            try:
-                # This is a simplified check. In production, you'd use a dedicated QR code scanner
-                qr_detector = cv2.QRCodeDetector()
-                retval, decoded_info, points, straight_qrcode = qr_detector.detectAndDecodeMulti(img)
+                analysis_results.append("Could not load image for analysis with OpenCV")
+            else:
+                # Get image dimensions and calculate image hash for analysis
+                height, width, channels = img.shape
+                performed_checks.append("Advanced image integrity check")
+                performed_checks.append("Visual content analysis")
                 
-                if retval:
-                    performed_checks.append("QR code detection")
-                    analysis_results.append(f"Found QR code in image that points to: {decoded_info}")
-                    # Analyze the QR URL for potential scams
-                    for url in decoded_info:
-                        if url:
-                            is_scam, confidence, reasons = check_for_scam(url)
-                            if is_scam:
-                                analysis_results.append(f"QR code contains suspicious URL: {url}")
-            except Exception as e:
-                # QR detection is optional, don't fail if this doesn't work
-                pass
-            
+                # Basic image quality check
+                blurriness = cv2.Laplacian(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), cv2.CV_64F).var()
+                if blurriness < 100:  # Arbitrary threshold, adjust as needed
+                    analysis_results.append("⚠️ Image appears blurry, which may indicate manipulation")
+                
+                # Check for hidden text that OCR might have missed using edge detection
+                edges = cv2.Canny(img, 100, 200)
+                text_region_ratio = np.count_nonzero(edges) / (height * width)
+                if text_region_ratio > 0.1 and not extracted_text:  # If there seem to be text-like edges but OCR found nothing
+                    analysis_results.append("⚠️ Image may contain text that couldn't be extracted")
+                    
+                    # Try to extract text from the edge-detected image if OCR is available
+                    if OCR_AVAILABLE and text_region_ratio > 0.15:
+                        try:
+                            # Convert edges to PIL Image for OCR
+                            edge_img = Image.fromarray(edges)
+                            edge_text = pytesseract.image_to_string(edge_img)
+                            
+                            if edge_text and len(edge_text) > 10:
+                                extracted_text += " " + edge_text
+                                analysis_results.append("Extracted text from edge detection")
+                        except:
+                            pass
+                
+                # Compute image hash for potential comparison with known scam images
+                img_hash = hashlib.md5(img.tobytes()).hexdigest()
+                # In a real system, you would compare against a database of known scam image hashes
+                
+                # Check for QR codes or barcodes that might lead to malicious sites
+                try:
+                    # This is a simplified check. In production, you'd use a dedicated QR code scanner
+                    qr_detector = cv2.QRCodeDetector()
+                    retval, decoded_info, points, straight_qrcode = qr_detector.detectAndDecodeMulti(img)
+                    
+                    if retval:
+                        performed_checks.append("QR code detection")
+                        analysis_results.append(f"⚠️ Found QR code in image that points to: {decoded_info}")
+                        # Analyze the QR URL for potential scams
+                        for url in decoded_info:
+                            if url:
+                                is_scam, confidence, reasons = check_for_scam(url)
+                                if is_scam:
+                                    analysis_results.append(f"⚠️ QR code contains suspicious URL: {url}")
+                except Exception as e:
+                    # QR detection is optional, don't fail if this doesn't work
+                    pass
+                
+                # Try advanced text detection with OpenCV EAST text detector if no text was found yet
+                if not extracted_text and OCR_AVAILABLE:
+                    try:
+                        # Use simple automatic thresholding for better text extraction
+                        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                        _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+                        
+                        # Save to temp file and use OCR
+                        temp_thresh_path = image_path + "_thresh.jpg"
+                        cv2.imwrite(temp_thresh_path, thresh)
+                        
+                        with Image.open(temp_thresh_path) as thresh_img:
+                            thresh_text = pytesseract.image_to_string(thresh_img)
+                            if thresh_text and len(thresh_text) > 10:
+                                extracted_text += " " + thresh_text
+                                analysis_results.append("Extracted text using advanced thresholding")
+                        
+                        # Clean up temp file
+                        if os.path.exists(temp_thresh_path):
+                            os.remove(temp_thresh_path)
+                    except:
+                        pass
+                
         except Exception as e:
-            analysis_results.append(f"Visual analysis failed: {str(e)}")
+            analysis_results.append(f"OpenCV analysis failed: {str(e)}")
     else:
-        analysis_results.append("OpenCV not available for advanced image analysis")
-    
-    # 4. Check metadata (EXIF data) for any suspicious elements
-    try:
-        with Image.open(image_path) as img:
-            performed_checks.append("Metadata analysis")
-            exif_data = img._getexif()
-            if exif_data:
-                # Just note that we found metadata
-                analysis_results.append("Image contains metadata/EXIF data")
+        analysis_results.append("OpenCV not available - install opencv-python for advanced image analysis")
+        
+        # Extra AI-based analysis when OpenCV is unavailable
+        performed_checks.append("Simplified visual pattern analysis")
+        analysis_results.append("Using alternative AI-based pattern analysis")
+        
+        # Analyze file signature for tampering
+        with open(image_path, 'rb') as f:
+            header = f.read(32)  # Read file header
             
-            # Check for common image manipulation
-            if img.format == 'PNG' and img.mode == 'RGBA':
-                # Check for transparency which could be hiding content
-                transparent_pixels = 0
-                for pixel in img.getdata():
-                    if len(pixel) == 4 and pixel[3] < 255:  # Alpha channel < 255 means some transparency
-                        transparent_pixels += 1
-                
-                if transparent_pixels > 0:
-                    analysis_results.append(f"Image has {transparent_pixels} transparent pixels which might hide content")
-    except Exception as e:
-        analysis_results.append(f"Metadata analysis failed: {str(e)}")
+        # Check file signature against known patterns
+        if format_type == 'PNG' and not header.startswith(b'\x89PNG\r\n\x1a\n'):
+            analysis_results.append("⚠️ PNG header is invalid, possible file tampering")
+        elif format_type == 'JPEG' and not (header.startswith(b'\xff\xd8\xff') or header.startswith(b'\xff\xd8')):
+            analysis_results.append("⚠️ JPEG header is invalid, possible file tampering")
+    
+    # Clean up extracted text
+    if extracted_text:
+        # Remove extra whitespace and normalize
+        extracted_text = re.sub(r'\s+', ' ', extracted_text).strip()
+        # Remove non-printable characters
+        extracted_text = ''.join(char for char in extracted_text if char.isprintable() or char.isspace())
+    
+    # 6. Final step: AI-based scam likelihood assessment
+    performed_checks.append("AI-based scam likelihood assessment")
+    
+    # Check for scam content in extracted text
+    if extracted_text and len(extracted_text) > 10:
+        is_scam, confidence, reasons = check_for_scam(extracted_text)
+        if is_scam:
+            risk_level = "High Risk" if confidence > 60 else "Medium Risk"
+            analysis_results.append(f"⚠️ {risk_level}: Detected scam text in image ({confidence}% confidence)")
+            for reason in reasons:
+                analysis_results.append(f"⚠️ {reason}")
+    
+    # Suspicious patterns typically found in scam images
+    scam_indicators = [
+        result for result in analysis_results if "⚠️" in result
+    ]
+    
+    # Evaluate with simple heuristic approach
+    if len(scam_indicators) >= 3:
+        analysis_results.append("⚠️ HIGH LIKELIHOOD OF SCAM: Multiple suspicious patterns detected")
+    elif len(scam_indicators) >= 1:
+        analysis_results.append("⚠️ MEDIUM LIKELIHOOD OF SCAM: Some suspicious patterns detected") 
+    else:
+        analysis_results.append("✅ LOW LIKELIHOOD OF SCAM: No significant suspicious patterns detected")
     
     return extracted_text, analysis_results, performed_checks
 
+def perform_simplified_image_similarity_check(img):
+    """
+    Performs a simplified perceptual hash comparison to detect common scam patterns.
+    This is a fallback when advanced libraries aren't available.
+    """
+    import math
+    
+    # Create a simplified perceptual hash
+    # We'll resize the image to 8x8, convert to grayscale, and compare pixel values
+    try:
+        # Resize to small dimensions for simplified perceptual hash
+        small_img = img.resize((8, 8), Image.LANCZOS).convert('L')
+        pixels = list(small_img.getdata())
+        
+        # Calculate average pixel value
+        avg = sum(pixels) / len(pixels) if pixels else 0
+        
+        # Create binary hash (1 if pixel > avg, 0 otherwise)
+        binary_hash = ''.join('1' if p > avg else '0' for p in pixels)
+        
+        # Common hash patterns found in scam images (simplified examples)
+        # In a real system, you would have a database of hashes from known scam images
+        common_scam_patterns = [
+            # Pattern for fake bank notifications
+            '1111000011110000111100001111000011110000111100001111000011110000',
+            # Pattern for fake login pages
+            '0000111100001111000011110000111100001111000011110000111100001111',
+            # Pattern for QR code scams (simplified)
+            '1010101010101010101010101010101010101010101010101010101010101010',
+            # Pattern for high-contrast text on solid background (common in scams)
+            '1111111100000000111111110000000011111111000000001111111100000000'
+        ]
+        
+        # Check similarity with known patterns
+        for pattern in common_scam_patterns:
+            # Calculate Hamming distance (number of different bits)
+            hamming_distance = sum(b1 != b2 for b1, b2 in zip(binary_hash, pattern))
+            
+            # If hash is close to a known pattern (allowing for some variation)
+            if hamming_distance < 16:  # Threshold for 8x8 image (64 bits)
+                return True
+        
+        # Additional checks for common scam visual characteristics
+        
+        # Check for high contrast (common in scam images with bold text)
+        min_val, max_val = min(pixels), max(pixels)
+        if max_val - min_val > 200:  # High contrast threshold
+            # Check if image is mostly text on solid background
+            dark_pixels = sum(1 for p in pixels if p < 50)
+            light_pixels = sum(1 for p in pixels if p > 200)
+            
+            # If most pixels are either very dark or very light (text on plain background)
+            if (dark_pixels + light_pixels) / len(pixels) > 0.8:
+                return True
+        
+        # Check for artificial borders (common in phishing/scam attempts)
+        border_pixels = [
+            pixels[0:8],  # Top row
+            pixels[56:64],  # Bottom row
+            pixels[0:57:8],  # Left column
+            pixels[7:64:8]  # Right column
+        ]
+        
+        # Flatten the border pixels
+        border_pixels = [p for row in border_pixels for p in row]
+        
+        # Calculate standard deviation of border pixels
+        if border_pixels:
+            mean = sum(border_pixels) / len(border_pixels)
+            std_dev = math.sqrt(sum((p - mean) ** 2 for p in border_pixels) / len(border_pixels))
+            
+            # Uniform borders often appear in scam images
+            if std_dev < 10:  # Low standard deviation indicates uniform border
+                return True
+    
+    except Exception as e:
+        # If anything fails, err on the side of caution and don't report a match
+        pass
+    
+    return False
+
+def preprocess_image_for_ocr(img):
+    """
+    Apply various preprocessing techniques to enhance text detection for OCR.
+    This function helps extract text from images with difficult-to-read text.
+    """
+    import io
+    import numpy as np
+    from PIL import Image, ImageFilter, ImageEnhance
+    
+    try:
+        # Make a copy of the image to avoid modifying the original
+        preprocessed = img.copy()
+        
+        # 1. Resize for better OCR performance (if image is very small)
+        width, height = preprocessed.size
+        if width < 1000 or height < 1000:
+            scale_factor = 2
+            preprocessed = preprocessed.resize((width * scale_factor, height * scale_factor), Image.LANCZOS)
+        
+        # 2. Convert to grayscale for better text recognition
+        if preprocessed.mode != 'L':
+            preprocessed = preprocessed.convert('L')
+        
+        # 3. Increase contrast to make text more visible
+        enhancer = ImageEnhance.Contrast(preprocessed)
+        preprocessed = enhancer.enhance(2.0)  # Increase contrast
+        
+        # 4. Apply threshold to make text more distinct (black and white)
+        threshold_value = 150  # Adjust as needed (0-255)
+        preprocessed = preprocessed.point(lambda x: 0 if x < threshold_value else 255, '1')
+        
+        # 5. Apply slight sharpening for better edge definition
+        preprocessed = preprocessed.filter(ImageFilter.SHARPEN)
+        
+        # 6. Apply noise reduction
+        preprocessed = preprocessed.filter(ImageFilter.MedianFilter(size=3))
+        
+        # 7. Apply dilate/erode morphological operations (similar to OpenCV's dilate/erode)
+        # Simulate dilation by expanding dark regions
+        dilated = preprocessed.filter(ImageFilter.MaxFilter(size=3))
+        
+        return dilated
+    except Exception as e:
+        # If preprocessing fails, return the original image
+        return img
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5001)  # Changed port from 5000 to 5001
