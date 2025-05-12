@@ -77,13 +77,46 @@
         margin-top: 20px;
     }
     
-    /* Styles for different risk levels */
-    .result-message:has(⚠️) {
-        color: #e74c3c;
+    /* Educational Tips Section */
+    .education-tips {
+        margin-top: 25px;
+        padding: 20px;
+        background-color: rgba(26, 42, 108, 0.05);
+        border-radius: 10px;
+        border-left: 5px solid var(--secondary-color);
     }
     
-    .result-message:has(✅) {
-        color: #2ecc71;
+    .education-tips h3 {
+        color: var(--primary-color);
+        margin-bottom: 15px;
+        font-size: 1.2rem;
+    }
+    
+    .education-tips ul {
+        padding-left: 20px;
+        margin-bottom: 15px;
+    }
+    
+    .education-tips li {
+        margin-bottom: 10px;
+        line-height: 1.5;
+    }
+    
+    .education-tips p {
+        font-style: italic;
+        background-color: rgba(255, 140, 66, 0.1);
+        padding: 10px;
+        border-radius: 5px;
+        margin-top: 10px;
+    }
+    
+    /* Styles for different risk levels */
+    .result-message:has(⚠️) .education-tips {
+        border-left-color: var(--warning-color);
+    }
+    
+    .result-message:has(✅) .education-tips {
+        border-left-color: var(--success-color);
     }
 </style>
 {% endblock %}

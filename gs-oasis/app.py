@@ -374,16 +374,69 @@ def scan_link():
         # Perform scam detection on the link
         is_scam, confidence, reasons = check_for_scam(link)
         
+        # Extract domain for analysis
+        try:
+            from urllib.parse import urlparse
+            parsed_url = urlparse(link)
+            domain = parsed_url.netloc or parsed_url.path
+            if not domain:
+                domain = link
+        except:
+            domain = link
+        
         # Create a detailed result message
         if is_scam:
             risk_level = "High Risk" if confidence > 60 else "Medium Risk"
             result_msg = f"⚠️ {risk_level}: This link shows indicators of a potential scam ({confidence}% confidence)."
+            
+            # Add detected reasons
             for reason in reasons:
                 result_msg += f"\n• {reason}"
-            result_msg += "\n\nRecommendation: Do not visit this website or provide any information."
+            
+            result_msg += "\n\n<strong>Recommendation:</strong> Do not visit this website or provide any information."
+            
+            # Add educational content about avoiding scams
+            result_msg += "\n\n<div class='education-tips'>"
+            result_msg += "\n<h3>How to Protect Yourself from Scam Links:</h3>"
+            result_msg += "\n<ul>"
+            result_msg += "\n<li><strong>Be wary of unsolicited links</strong> - Don't click on links from unknown sources, even if they appear to be from a trusted organization.</li>"
+            result_msg += "\n<li><strong>Check URLs carefully</strong> - Scammers often use domain names that look similar to legitimate sites but have slight misspellings.</li>"
+            result_msg += "\n<li><strong>Look for secure connections</strong> - Legitimate sites typically use HTTPS (look for the padlock icon in your browser).</li>"
+            result_msg += "\n<li><strong>Be suspicious of urgent or threatening messages</strong> - Scammers often create a false sense of urgency to pressure you into clicking.</li>"
+            result_msg += "\n<li><strong>Don't provide personal information</strong> - Legitimate organizations typically don't ask for sensitive information through email links.</li>"
+            result_msg += "\n</ul>"
+            
+            # Add specific advice based on detected issues
+            if any("urgency" in reason.lower() for reason in reasons):
+                result_msg += "\n<p><strong>Note:</strong> This link contains urgency indicators, which is a common tactic to rush you into making poor decisions.</p>"
+            
+            if any("personal information" in reason.lower() for reason in reasons):
+                result_msg += "\n<p><strong>Note:</strong> This link appears to be designed to collect personal information, which could lead to identity theft.</p>"
+            
+            if any("financial" in reason.lower() or "money" in reason.lower() or "prize" in reason.lower() or "winner" in reason.lower()):
+                result_msg += "\n<p><strong>Note:</strong> This link contains promises of financial rewards, which is a common tactic in scams. Remember: if it sounds too good to be true, it probably is.</p>"
+            
+            result_msg += "\n</div>"
+            
         else:
             result_msg = f"✅ No known threats detected in this link.\nNote: While no threats were detected, always remain cautious when visiting unfamiliar websites."
             
+            # Add more detailed information about the link
+            result_msg += f"\n\n<strong>Domain:</strong> {domain}"
+            
+            # Add educational content for safe browsing
+            result_msg += "\n\n<div class='education-tips'>"
+            result_msg += "\n<h3>Safe Browsing Tips:</h3>"
+            result_msg += "\n<ul>"
+            result_msg += "\n<li><strong>Keep your browser updated</strong> - Updates often include security patches for newly discovered vulnerabilities.</li>"
+            result_msg += "\n<li><strong>Use a secure browser</strong> - Browsers like Chrome, Firefox, and Safari regularly update to protect against threats.</li>"
+            result_msg += "\n<li><strong>Consider using a VPN</strong> - A Virtual Private Network can provide an additional layer of privacy and security.</li>"
+            result_msg += "\n<li><strong>Install an ad blocker</strong> - This can protect against malicious advertisements that might redirect you.</li>"
+            result_msg += "\n<li><strong>Practice good password hygiene</strong> - Use unique, strong passwords for different websites.</li>"
+            result_msg += "\n</ul>"
+            result_msg += "\n<p>Even though this link appears safe, remember that new threats emerge daily. Always remain vigilant!</p>"
+            result_msg += "\n</div>"
+        
         # Store scan results for the results page
         session['last_scan_type'] = 'link'
         session['last_scan_result'] = result_msg.replace("\n", "<br>")

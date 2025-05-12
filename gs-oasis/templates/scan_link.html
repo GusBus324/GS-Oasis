@@ -1,14 +1,343 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<section class="scanner">
-    <h1>Scan Link</h1>
-    <p>Enter a URL to scan for potential threats.</p>
-    <form action="{{ url_for('scan_link') }}" method="POST">
-        <div class="input-box">
-            <input type="url" name="link" placeholder="Enter URL here" required>
+<section class="scanner scan-link-container">
+    <div class="scanner-header">
+        <div class="scanner-title">
+            <h1>Scan Link</h1>
+            <p class="scanner-description">Enter a URL to scan for potential threats. Our system analyzes links to identify indicators of phishing, scams, and other malicious content.</p>
         </div>
-        <button type="submit" class="btn btn-primary">Scan Link</button>
-    </form>
+        <div class="scanner-icon">
+            <i class="fas fa-link-shield"></i>
+            <div class="pulse-ring"></div>
+        </div>
+    </div>
+    
+    <div class="scanner-content">
+        <div class="form-card">
+            <form action="{{ url_for('scan_link') }}" method="POST">
+                <div class="link-input-wrapper">
+                    <div class="link-icon">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <input type="url" name="link" id="link-input" placeholder="Enter the complete URL (e.g., https://example.com)" required>
+                </div>
+                <div class="examples">
+                    <p>Examples: <span class="example-link">https://legitimate-bank.com</span>, <span class="example-link">https://news-website.org/article</span></p>
+                </div>
+                <button type="submit" class="btn btn-primary scan-btn">
+                    <i class="fas fa-shield-check"></i> Scan Link
+                </button>
+            </form>
+        </div>
+        
+        <div class="info-card">
+            <div class="card-header">
+                <i class="fas fa-info-circle"></i>
+                <h3>How We Scan Links</h3>
+            </div>
+            <div class="card-body">
+                <div class="scan-feature">
+                    <div class="feature-icon"><i class="fas fa-search"></i></div>
+                    <div class="feature-text">
+                        <h4>Content Analysis</h4>
+                        <p>We analyze link content for suspicious indicators commonly found in scams and phishing.</p>
+                    </div>
+                </div>
+                <div class="scan-feature">
+                    <div class="feature-icon"><i class="fas fa-server"></i></div>
+                    <div class="feature-text">
+                        <h4>Domain Check</h4>
+                        <p>We check if the domain has suspicious patterns or is using deceptive techniques.</p>
+                    </div>
+                </div>
+                <div class="scan-feature">
+                    <div class="feature-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                    <div class="feature-text">
+                        <h4>Risk Assessment</h4>
+                        <p>We calculate an overall risk score based on multiple factors and provide targeted recommendations.</p>
+                    </div>
+                </div>
+                <div class="scan-note">
+                    <i class="fas fa-lock"></i>
+                    <p>For your privacy, we don't store the actual contents of the links you scan.</p>
+                </div>
+            </div>
+        </div>
+    </div>
 </section>
+
+<style>
+    /* Scanner Styles */
+    .scanner {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .scanner-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 30px;
+        position: relative;
+    }
+
+    .scanner-title {
+        flex: 1;
+    }
+
+    .scanner h1 {
+        color: var(--primary-color);
+        font-size: 2.2rem;
+        margin-bottom: 10px;
+        font-weight: 700;
+        position: relative;
+    }
+
+    .scanner-description {
+        color: var(--dark-color);
+        font-size: 1.05rem;
+        margin-bottom: 20px;
+        max-width: 700px;
+        line-height: 1.6;
+    }
+
+    .scanner-icon {
+        font-size: 2.5rem;
+        color: var(--secondary-color);
+        margin-left: 20px;
+        position: relative;
+    }
+    
+    .scanner-icon .pulse-ring {
+        width: 60px;
+        height: 60px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 166, 183, 0.1);
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+    
+    /* Content layout */
+    .scanner-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+    }
+
+    /* Form Card */
+    .form-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+        transition: transform 0.3s ease;
+    }
+    
+    .form-card:hover {
+        transform: translateY(-5px);
+    }
+
+    /* Link Input */
+    .link-input-wrapper {
+        display: flex;
+        align-items: center;
+        background-color: rgba(0, 166, 183, 0.05);
+        border: 2px solid var(--secondary-color);
+        border-radius: 10px;
+        padding: 5px 15px;
+        margin-bottom: 10px;
+        transition: all 0.3s ease;
+    }
+    
+    .link-input-wrapper:focus-within {
+        border-color: var(--primary-color);
+        background-color: rgba(0, 166, 183, 0.1);
+        box-shadow: 0 0 0 4px rgba(26, 42, 108, 0.1);
+    }
+    
+    .link-icon {
+        color: var(--secondary-color);
+        font-size: 1.2rem;
+        margin-right: 10px;
+    }
+    
+    #link-input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        padding: 12px 0;
+        font-size: 1rem;
+        color: var(--dark-color);
+        width: 100%;
+    }
+    
+    #link-input:focus {
+        outline: none;
+    }
+    
+    .examples {
+        font-size: 0.85rem;
+        color: var(--dark-color);
+        opacity: 0.7;
+        margin-bottom: 20px;
+    }
+    
+    .example-link {
+        color: var(--secondary-color);
+        cursor: pointer;
+        font-weight: 500;
+    }
+    
+    /* Info Card */
+    .info-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+    
+    .info-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .card-header {
+        background: var(--gradient-primary);
+        color: white;
+        padding: 15px 30px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .card-header h3 {
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+    
+    .card-body {
+        padding: 25px 30px;
+    }
+    
+    /* Scan Features */
+    .scan-feature {
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .scan-feature:last-of-type {
+        border-bottom: none;
+    }
+    
+    .feature-icon {
+        background-color: rgba(0, 166, 183, 0.1);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--secondary-color);
+        font-size: 1rem;
+    }
+    
+    .feature-text h4 {
+        margin: 0 0 5px 0;
+        font-size: 1rem;
+        color: var(--primary-color);
+    }
+    
+    .feature-text p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: var(--dark-color);
+        line-height: 1.4;
+    }
+    
+    .scan-note {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 20px;
+        padding: 15px;
+        background-color: rgba(255, 140, 66, 0.1);
+        border-radius: 8px;
+    }
+    
+    .scan-note i {
+        color: var(--accent-color);
+        font-size: 1.2rem;
+    }
+    
+    .scan-note p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: var(--dark-color);
+    }
+    
+    /* Scan Button */
+    .scan-btn {
+        width: 100%;
+        padding: 12px;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+        background: var(--primary-color);
+        border: none;
+    }
+    
+    .scan-btn:hover {
+        background: var(--secondary-color);
+        transform: translateY(-2px);
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 900px) {
+        .scanner-content {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    @media (max-width: 600px) {
+        .scanner-header {
+            flex-direction: column;
+        }
+        
+        .scanner-icon {
+            margin-left: 0;
+            margin-top: 20px;
+            align-self: center;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Make example links clickable to fill the input
+        const exampleLinks = document.querySelectorAll('.example-link');
+        const linkInput = document.getElementById('link-input');
+        
+        exampleLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                linkInput.value = this.textContent.trim();
+                linkInput.focus();
+            });
+        });
+    });
+</script>
 {% endblock %}
