@@ -653,6 +653,32 @@ def analyze_image_content(image_path):
             if format_type == 'JPEG' and mode == 'RGBA':
                 analysis_results.append("⚠️ Unusual mode for JPEG format, possible manipulation")
             
+            # QR Code detection - common in scams
+            if OPENCV_AVAILABLE:
+                try:
+                    # Convert PIL image to OpenCV format
+                    img_cv = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
+                    
+                    # Initialize QR Code detector
+                    qr_detector = cv2.QRCodeDetector()
+                    retval, decoded_info, points, straight_qrcode = qr_detector.detectAndDecodeMulti(img_cv)
+                    
+                    if retval:
+                        performed_checks.append("QR code detection")
+                        analysis_results.append(f"⚠️ QR code detected in image. QR codes in unsolicited images may link to malicious websites.")
+                        # Add the decoded information if available
+                        if decoded_info and any(decoded_info):
+                            qr_urls = [url for url in decoded_info if url.startswith(('http://', 'https://'))]
+                            if qr_urls:
+                                for url in qr_urls:
+                                    analysis_results.append(f"⚠️ QR code contains URL: {url[:50]}{'...' if len(url) > 50 else ''}")
+                                    # Check if the URL itself is suspicious
+                                    is_suspicious, reason = check_url_suspiciousness(url)
+                                    if is_suspicious:
+                                        analysis_results.append(f"⚠️ QR code URL appears suspicious: {reason}")
+                except Exception as e:
+                    pass  # Silently fail QR detection if something goes wrong
+            
             # 3. Extract text using OCR if available
             if OCR_AVAILABLE:
                 try:

@@ -1,15 +1,422 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<section class="scanner">
-    <h1>Scan Image</h1>
-    <p>Upload an image to scan for potential threats.</p>
-    <form action="{{ url_for('scan_image') }}" method="POST" enctype="multipart/form-data">
-        <div class="drop-zone">
-            <input type="file" name="image" accept="image/*" required>
-            <p>Drag & drop your image here, or click to select a file.</p>
+<section class="scanner scan-image-container">
+    <div class="scanner-header">
+        <div class="scanner-title">
+            <h1>Scan Image</h1>
+            <p class="scanner-description">Upload an image to scan for potential threats. Our system analyzes images for suspicious content, hidden text, and common scam indicators.</p>
         </div>
-        <button type="submit" class="btn btn-primary">Scan Image</button>
-    </form>
+        <div class="scanner-icon">
+            <i class="fas fa-image-shield"></i>
+            <div class="pulse-ring"></div>
+        </div>
+    </div>
+    
+    <div class="scanner-content">
+        <div class="form-card">
+            <form action="{{ url_for('scan_image') }}" method="POST" enctype="multipart/form-data">
+                <div class="drop-zone">
+                    <input type="file" name="image" id="image-input" accept="image/*" required>
+                    <div class="drop-icon">
+                        <i class="fas fa-image-upload"></i>
+                    </div>
+                    <p class="drop-text">Drag & drop your image here, or click to select</p>
+                    <p class="selected-file" id="selected-file-name">No image selected</p>
+                </div>
+                <div class="accepted-formats">
+                    <p>Supported formats: JPG, PNG, GIF, BMP, TIFF</p>
+                </div>
+                <button type="submit" class="btn btn-primary scan-btn">
+                    <i class="fas fa-shield-check"></i> Scan Image
+                </button>
+            </form>
+        </div>
+        
+        <div class="info-card">
+            <div class="card-header">
+                <i class="fas fa-info-circle"></i>
+                <h3>Common Scam Texts in Images</h3>
+            </div>
+            <div class="card-body">
+                <div class="scam-type">
+                    <div class="scam-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="scam-text">
+                        <h4>Urgent Action Required</h4>
+                        <p>Claims of account problems, limited-time offers, or urgent requests that pressure you to act quickly without thinking.</p>
+                    </div>
+                </div>
+                <div class="scam-type">
+                    <div class="scam-icon">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <div class="scam-text">
+                        <h4>Too-Good-To-Be-True Offers</h4>
+                        <p>Promises of free money, prizes, lottery winnings, or unrealistic investment returns with little or no effort.</p>
+                    </div>
+                </div>
+                <div class="scam-type">
+                    <div class="scam-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <div class="scam-text">
+                        <h4>Requests for Personal Information</h4>
+                        <p>Phishing attempts claiming to be from banks, government agencies, or known companies asking for passwords, account details, or personal data.</p>
+                    </div>
+                </div>
+                <div class="scam-type">
+                    <div class="scam-icon">
+                        <i class="fas fa-qrcode"></i>
+                    </div>
+                    <div class="scam-text">
+                        <h4>QR Code Scams</h4>
+                        <p>Images with QR codes that lead to malicious websites, fake payment portals, or malware downloads.</p>
+                    </div>
+                </div>
+                <div class="prevention-note">
+                    <i class="fas fa-shield-alt"></i>
+                    <div>
+                        <h4>How to Protect Yourself:</h4>
+                        <ul>
+                            <li>Verify the sender through official channels before responding to any request</li>
+                            <li>Never click links or scan QR codes from untrusted sources</li>
+                            <li>Don't share personal or financial information in response to unsolicited messages</li>
+                            <li>Check for poor grammar, misspellings, and generic greetings - these are common in scam texts</li>
+                            <li>Remember that legitimate organizations won't ask for sensitive information through images</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </section>
+
+<style>
+    /* Scanner Styles */
+    .scanner {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .scanner-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 30px;
+        position: relative;
+    }
+
+    .scanner-title {
+        flex: 1;
+    }
+
+    .scanner h1 {
+        color: var(--primary-color);
+        font-size: 2.2rem;
+        margin-bottom: 10px;
+        font-weight: 700;
+        position: relative;
+    }
+
+    .scanner-description {
+        color: var(--dark-color);
+        font-size: 1.05rem;
+        margin-bottom: 20px;
+        max-width: 700px;
+        line-height: 1.6;
+    }
+
+    .scanner-icon {
+        font-size: 2.5rem;
+        color: var(--secondary-color);
+        margin-left: 20px;
+        position: relative;
+    }
+    
+    .scanner-icon .pulse-ring {
+        width: 60px;
+        height: 60px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 166, 183, 0.1);
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+    
+    /* Content layout */
+    .scanner-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+    }
+
+    /* Form Card */
+    .form-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+        transition: transform 0.3s ease;
+    }
+    
+    .form-card:hover {
+        transform: translateY(-5px);
+    }
+
+    /* Drop Zone */
+    .drop-zone {
+        border: 2px dashed var(--secondary-color);
+        border-radius: 10px;
+        background-color: rgba(0, 166, 183, 0.05);
+        padding: 40px 30px;
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+        margin-bottom: 15px;
+        cursor: pointer;
+    }
+    
+    .drop-zone:hover, 
+    .drop-zone.active {
+        background-color: rgba(0, 166, 183, 0.1);
+        border-color: var(--primary-color);
+    }
+    
+    .drop-zone input[type="file"] {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
+    
+    .drop-icon {
+        font-size: 3rem;
+        color: var(--secondary-color);
+        margin-bottom: 15px;
+        transition: transform 0.3s ease;
+    }
+    
+    .drop-zone:hover .drop-icon,
+    .drop-zone.active .drop-icon {
+        transform: scale(1.1);
+        color: var(--primary-color);
+    }
+    
+    .drop-text {
+        font-size: 1rem;
+        color: var(--dark-color);
+        margin-bottom: 10px;
+    }
+    
+    .selected-file {
+        font-size: 0.9rem;
+        color: var(--secondary-color);
+        font-weight: 600;
+        margin-top: 10px;
+    }
+
+    .accepted-formats {
+        font-size: 0.85rem;
+        color: var(--dark-color);
+        opacity: 0.7;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    
+    /* Info Card */
+    .info-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+    
+    .info-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .card-header {
+        background: var(--gradient-primary);
+        color: white;
+        padding: 15px 30px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .card-header h3 {
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+    
+    .card-body {
+        padding: 25px 30px;
+    }
+    
+    /* Scam Types */
+    .scam-type {
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .scam-type:last-of-type {
+        border-bottom: none;
+        margin-bottom: 20px;
+    }
+    
+    .scam-icon {
+        background-color: rgba(255, 140, 66, 0.1);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--accent-color);
+        font-size: 1rem;
+    }
+    
+    .scam-text h4 {
+        margin: 0 0 5px 0;
+        font-size: 1rem;
+        color: var(--primary-color);
+    }
+    
+    .scam-text p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: var(--dark-color);
+        line-height: 1.4;
+    }
+    
+    /* Prevention Note */
+    .prevention-note {
+        display: flex;
+        gap: 15px;
+        padding: 15px;
+        background-color: rgba(0, 176, 155, 0.1);
+        border-radius: 8px;
+        margin-top: 15px;
+    }
+    
+    .prevention-note i {
+        color: var(--success-color);
+        font-size: 1.2rem;
+        margin-top: 4px;
+    }
+    
+    .prevention-note h4 {
+        margin: 0 0 8px 0;
+        font-size: 1rem;
+        color: var(--primary-color);
+    }
+    
+    .prevention-note ul {
+        margin: 0;
+        padding-left: 18px;
+        font-size: 0.9rem;
+    }
+    
+    .prevention-note li {
+        margin-bottom: 5px;
+        color: var(--dark-color);
+    }
+    
+    /* Scan Button */
+    .scan-btn {
+        width: 100%;
+        padding: 12px;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+        background: var(--primary-color);
+        border: none;
+    }
+    
+    .scan-btn:hover {
+        background: var(--secondary-color);
+        transform: translateY(-2px);
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 900px) {
+        .scanner-content {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    @media (max-width: 600px) {
+        .scanner-header {
+            flex-direction: column;
+        }
+        
+        .scanner-icon {
+            margin-left: 0;
+            margin-top: 20px;
+            align-self: center;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileInput = document.getElementById('image-input');
+        const fileNameDisplay = document.getElementById('selected-file-name');
+        const dropZone = document.querySelector('.drop-zone');
+        
+        // Update filename when file is selected
+        fileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                const file = this.files[0];
+                fileNameDisplay.textContent = file.name;
+                
+                // Preview the image if it's an image file
+                if (file.type.startsWith('image/')) {
+                    dropZone.classList.add('active');
+                } else {
+                    fileNameDisplay.textContent = 'Please select an image file';
+                }
+            } else {
+                fileNameDisplay.textContent = 'No image selected';
+                dropZone.classList.remove('active');
+            }
+        });
+        
+        // Handle drag and drop visual effects
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, function(e) {
+                e.preventDefault();
+                dropZone.classList.add('active');
+            });
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, function(e) {
+                e.preventDefault();
+                if (eventName === 'dragleave') {
+                    dropZone.classList.remove('active');
+                }
+            });
+        });
+    });
+</script>
 {% endblock %}
