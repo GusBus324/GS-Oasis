@@ -495,7 +495,7 @@ def ai_assistant():
     if request.method == 'POST':
         user_question = request.form.get('question')
         query = get_open_ai_repsonse(user_question)
-        response = f"This is a placeholder response for: {query}"
+        response = f"GS Oasis's ai says: {query}"
     return render_template('ai_assistant.html', response=response)
 
 @app.route('/resources')
