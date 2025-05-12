@@ -5,3 +5,4 @@ pypdf2==3.0.1
 pytesseract==0.3.10
 numpy==1.24.3
 opencv-python==4.8.0.74
+openai==0.28.0

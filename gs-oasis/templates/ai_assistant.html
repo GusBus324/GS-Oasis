@@ -3,16 +3,45 @@
 {% block content %}
 <section class="ai-assistant">
     <h1>AI Assistant</h1>
-    <p>Ask any question, and our AI Assistant will help you.</p>
+    <p>Ask any question about a message to determine if it's a phishing scam.</p>
+    
+    <div class="suggestion-container">
+        <h3>Suggested questions:</h3>
+        <div class="suggestion-buttons">
+            <button class="suggested-question" onclick="fillQuestion('Is this email asking for my bank details a scam? The email says my account has been compromised and I need to verify my details urgently.')">Bank Account Verification Email</button>
+            <button class="suggested-question" onclick="fillQuestion('I got a text message saying I won a gift card and need to click a link to claim it. Is this a scam?')">Prize/Gift Card Message</button>
+            <button class="suggested-question" onclick="fillQuestion('Someone claiming to be Microsoft support called saying my computer has a virus and they need remote access to fix it. Is this legitimate?')">Tech Support Call</button>
+        </div>
+    </div>
+    
     <form action="{{ url_for('ai_assistant') }}" method="POST">
-        <textarea name="question" placeholder="Type your question here..." required></textarea>
-        <button type="submit" class="btn btn-primary">Ask</button>
+        <textarea name="question" id="questionBox" placeholder="Paste the suspicious message or describe the situation..." required></textarea>
+        <button type="submit" class="btn btn-primary">Analyze Message</button>
     </form>
+    
     {% if response %}
     <div class="response">
-        <h2>Response:</h2>
-        <p>{{ response }}</p>
+        {{ response|safe }}
+    </div>
+    
+    <div class="related-questions">
+        <h3>Related inquiries you might have:</h3>
+        <ul>
+            <li><a href="#" onclick="fillQuestion('What should I do if I already responded to this message?'); return false;">What should I do if I already responded to this message?</a></li>
+            <li><a href="#" onclick="fillQuestion('How can I report this scam to authorities?'); return false;">How can I report this scam to authorities?</a></li>
+            <li><a href="#" onclick="fillQuestion('What personal information is most dangerous to share with scammers?'); return false;">What personal information is most dangerous to share?</a></li>
+        </ul>
     </div>
     {% endif %}
 </section>
+
+<script>
+    function fillQuestion(text) {
+        document.getElementById('questionBox').value = text;
+        // Optional: Scroll to the textarea
+        document.getElementById('questionBox').scrollIntoView({behavior: 'smooth'});
+        // Optional: Focus the textarea
+        document.getElementById('questionBox').focus();
+    }
+</script>
 {% endblock %}

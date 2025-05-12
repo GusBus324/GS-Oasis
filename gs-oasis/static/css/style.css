@@ -6,6 +6,8 @@
     --dark-color: #0d1b3e;
     --success-color: #00b09b;
     --warning-color: #ff9a3c;
+    --danger-color: #dc3545;
+    --safe-color: #28a745;
     --gradient-primary: linear-gradient(135deg, #1a2a6c 0%, #2a4798 100%);
     --gradient-secondary: linear-gradient(135deg, #00a6b7 0%, #00cdac 100%);
     --box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
