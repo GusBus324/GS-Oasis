@@ -411,62 +411,47 @@ def scan_file():
             return redirect(request.url)
             
         if file:
-            # Get file extension to determine how to extract text
+            # Get file extension to determine if it's a common format
             file_ext = os.path.splitext(file.filename)[1].lower()
             
-            # Default values
-            is_scam = False
-            confidence = 0
-            reasons = []
-            extracted_text = ""
+            # List of common file extensions
+            common_extensions = {
+                '.pdf': 'PDF (Portable Document Format)',
+                '.tiff': 'TIFF (Tagged Image File Format)',
+                '.tif': 'TIFF (Tagged Image File Format)',
+                '.gif': 'GIF (Graphics Interchange Format)',
+                '.svg': 'SVG (Scalable Vector Graphics)',
+                '.xlsx': 'XLSX (Excel Spreadsheet)',
+                '.xls': 'XLS (Excel Spreadsheet)',
+                '.bmp': 'BMP (Bitmap Image File)',
+                '.html': 'HTML (Hypertext Markup Language)',
+                '.htm': 'HTML (Hypertext Markup Language)',
+                '.jpg': 'JPEG (Joint Photographic Experts Group)',
+                '.jpeg': 'JPEG (Joint Photographic Experts Group)',
+                '.png': 'PNG (Portable Network Graphics)'
+            }
             
-            # Extract text based on file type
+            # Check if the file is a common format
+            is_common_format = file_ext in common_extensions
+            format_name = common_extensions.get(file_ext, "Unknown Format")
+            
             try:
-                if file_ext == '.txt':
-                    # Read text file directly
-                    extracted_text = file.read().decode('utf-8', errors='ignore')
-                    
-                elif file_ext == '.pdf':
-                    # Extract text from PDF
-                    try:
-                        pdf_reader = PyPDF2.PdfReader(file)
-                        for page_num in range(len(pdf_reader.pages)):
-                            page = pdf_reader.pages[page_num]
-                            extracted_text += page.extract_text() + " "
-                    except Exception as e:
-                        flash(f'Error reading PDF: {str(e)}', 'warning')
+                # Default result variables
+                result_msg = ""
                 
-                elif file_ext in ['.doc', '.docx']:
-                    # For Word documents, we'd need additional libraries
-                    # This is a placeholder for implementation with python-docx
-                    flash('Word document scanning is currently under development.', 'info')
-                    extracted_text = file.filename  # Just use filename for now
-                
+                if is_common_format:
+                    # File is a common format, considered safe
+                    result_msg = f"✅ File Format: {format_name}\n\nThis is a common file format that is generally used for legitimate purposes. However, still exercise caution when handling files from unknown sources."
                 else:
-                    # For other file types, just analyze the filename
-                    extracted_text = file.filename
-                    flash('Full content scanning not available for this file type. Analyzing filename only.', 'info')
-                
-                # Perform scam detection on the extracted text
-                if extracted_text:
-                    is_scam, confidence, reasons = check_for_scam(extracted_text)
-                
-                # Create a detailed result message
-                if is_scam:
-                    risk_level = "High Risk" if confidence > 60 else "Medium Risk"
-                    result_msg = f"⚠️ {risk_level}: This file contains indicators of a potential scam ({confidence}% confidence)."
-                    for reason in reasons:
-                        result_msg += f"\n• {reason}"
-                    result_msg += "\n\nRecommendation: Do not share this file or follow instructions within it."
-                else:
-                    result_msg = f"✅ No scam indicators detected in the file content.\nNote: While no threats were detected, always remain cautious with files from unknown sources."
+                    # File is not a common format, mark as suspicious
+                    result_msg = f"⚠️ Suspicious File Format: {file_ext}\n\nThis file uses an uncommon format that is not in our list of standard formats. While this doesn't necessarily mean the file is malicious, uncommon file formats are sometimes used to distribute malware or hide dangerous content.\n\nRecommendation: Be extremely cautious with this file. Only open it if you trust the source completely and have proper security measures in place."
                 
                 # Store scan results for the results page
                 session['last_scan_type'] = 'file'
                 session['last_scan_result'] = result_msg.replace("\n", "<br>")
                 session['last_scan_filename'] = file.filename
                 
-                flash('File scanned successfully!', 'success')
+                flash('File format scanned successfully!', 'success')
                 return redirect(url_for('scan_results'))
             
             except Exception as e:
