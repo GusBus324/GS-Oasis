@@ -10,6 +10,8 @@ from functools import wraps
 import PyPDF2
 from PIL import Image
 import hashlib
+from query_gpt import get_open_ai_repsonse
+
 
 # Try to import image analysis libraries
 try:
@@ -492,8 +494,8 @@ def ai_assistant():
     response = None
     if request.method == 'POST':
         user_question = request.form.get('question')
-        # AI processing logic would go here
-        response = f"This is a placeholder response for: {user_question}"
+        query = get_open_ai_repsonse(user_question)
+        response = f"This is a placeholder response for: {query}"
     return render_template('ai_assistant.html', response=response)
 
 @app.route('/resources')
