@@ -753,9 +753,9 @@ section h2 {
 .welcome-animation {
     display: flex;
     align-items: center;
-    justify-content: center;
-    margin-bottom: 20px;
     position: relative;
+    margin-bottom: 20px;
+    padding-right: 40px; /* Add padding to accommodate the shield */
 }
 
 .welcome-text {
@@ -779,8 +779,8 @@ section h2 {
 
 .security-shield {
     position: absolute;
-    right: 10px; /* Reduced from 40px to 10px */
-    top: -10px; /* Added top positioning */
+    right: -50px; /* Moved further to the right so it doesn't overlap with text */
+    top: -5px; /* Adjusted top positioning */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -788,7 +788,7 @@ section h2 {
 }
 
 .shield-icon {
-    font-size: 2rem; /* Reduced from 2.5rem to 2rem */
+    font-size: 1.8rem; /* Slightly smaller icon */
     position: relative;
     z-index: 2;
     animation: shield-in 1s ease forwards 0.5s;
@@ -1039,6 +1039,15 @@ section h2 {
     }
     
     .security-shield {
-        display: none;
+        right: -10px;
+        top: -3px;
+    }
+    
+    .shield-icon {
+        font-size: 1.4rem;
+    }
+    
+    .welcome-animation {
+        padding-right: 15px;
     }
 }
