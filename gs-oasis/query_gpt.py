@@ -67,8 +67,8 @@ def get_open_ai_repsonse(user_question):
             # Fallback if no JSON can be extracted
             return f"""
             <div class="professional-response">
-                <div class="response-header alert-warning">
-                    <h2>⚠️ Analysis Results</h2>
+                <div class="response-header" style="background: var(--accent-color);">
+                    <h2>🔍 Analysis Results</h2>
                 </div>
                 <div class="response-section">
                     <h3>Analysis</h3>
@@ -99,10 +99,10 @@ def format_response_as_html(data):
         if isinstance(red_flags, str):
             red_flags_html = f"<p>{html.escape(red_flags)}</p>"
     
-    # Build the complete HTML response
+    # Build the complete HTML response with updated styling
     html_response = f"""
     <div class="professional-response">
-        <div class="response-header {status_class}">
+        <div class="response-header" style="background: {('#ff7b24' if is_phishing else '#00a6b7')};">
             <h2>{status_icon} {status_text}</h2>
         </div>
         
