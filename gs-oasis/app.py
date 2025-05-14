@@ -340,6 +340,9 @@ def scan_image():
                     text_preview = extracted_text[:100] + "..." if len(extracted_text) > 100 else extracted_text
                     result_msg += f"\n\nExtracted text sample: \"{text_preview}\""
                 
+                # Add AI assistant recommendation
+                result_msg += "\n\n<div class='ai-recommendation'><strong>Have any more questions?</strong> Ask the GS Oasis AI Assistant for help and insight. <a href='/ai_assistant'>Try our AI Assistant →</a></div>"
+                
                 # Clean up temporary file if it exists
                 if os.path.exists(temp_path):
                     os.remove(temp_path)
@@ -436,6 +439,9 @@ def scan_link():
             result_msg += "\n</ul>"
             result_msg += "\n<p>Even though this link appears safe, remember that new threats emerge daily. Always remain vigilant!</p>"
             result_msg += "\n</div>"
+            
+            # Add AI assistant recommendation
+            result_msg += "\n\n<div class='ai-recommendation'><strong>Have any more questions?</strong> Ask the GS Oasis AI Assistant for help and insight. <a href='/ai_assistant'>Try our AI Assistant →</a></div>"
         
         # Store scan results for the results page
         session['last_scan_type'] = 'link'
@@ -495,9 +501,15 @@ def scan_file():
                 if is_common_format:
                     # File is a common format, considered safe
                     result_msg = f"✅ File Format: {format_name}\n\nThis is a common file format that is generally used for legitimate purposes. However, still exercise caution when handling files from unknown sources."
+                    
+                    # Add AI assistant recommendation
+                    result_msg += "\n\n<div class='ai-recommendation'><strong>Have any more questions?</strong> Ask the GS Oasis AI Assistant for help and insight. <a href='/ai_assistant'>Try our AI Assistant →</a></div>"
                 else:
                     # File is not a common format, mark as suspicious
                     result_msg = f"⚠️ Suspicious File Format: {file_ext}\n\nThis file uses an uncommon format that is not in our list of standard formats. While this doesn't necessarily mean the file is malicious, uncommon file formats are sometimes used to distribute malware or hide dangerous content.\n\nRecommendation: Be extremely cautious with this file. Only open it if you trust the source completely and have proper security measures in place."
+                
+                # Add AI assistant recommendation
+                result_msg += "\n\n<div class='ai-recommendation'><strong>Have any more questions?</strong> Ask the GS Oasis AI Assistant for help and insight. <a href='/ai_assistant'>Try our AI Assistant →</a></div>"
                 
                 # Store scan results for the results page
                 session['last_scan_type'] = 'file'
