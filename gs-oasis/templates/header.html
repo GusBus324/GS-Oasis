@@ -14,13 +14,23 @@
     </div>
     <nav>
         <ul>
-            <li><a href="/">Home</a></li>
-            <li><a href="/scan-image">Image Scan</a></li>
-            <li><a href="/scan-link">Link Scan</a></li>
-            <li><a href="/scan-file">File Scan</a></li>
-            <li><a href="/ai-assistant">AI Assistant</a></li>
-            <li><a href="/resources">Resources</a></li>
-            <li><a href="/about">About</a></li>
+            <li><a href="{{ url_for('index') }}">Home</a></li>
+            {% if 'user_id' in session %}
+            <!-- Feature links for authenticated users -->
+            <li><a href="{{ url_for('scan_image') }}">Image Scan</a></li>
+            <li><a href="{{ url_for('scan_link') }}">Link Scan</a></li>
+            <li><a href="{{ url_for('scan_file') }}">File Scan</a></li>
+            <li><a href="{{ url_for('ai_assistant') }}">AI Assistant</a></li>
+            {% else %}
+            <!-- Auth links for guests -->
+            <li><a href="{{ url_for('register') }}">Sign Up</a></li>
+            <li><a href="{{ url_for('login') }}">Login</a></li>
+            {% endif %}
+            <li><a href="{{ url_for('resources') }}">Resources</a></li>
+            <li><a href="{{ url_for('about') }}">About</a></li>
+            {% if 'user_id' in session %}
+            <li><a href="{{ url_for('logout') }}" class="logout-btn">Logout</a></li>
+            {% endif %}
         </ul>
     </nav>
 </header>

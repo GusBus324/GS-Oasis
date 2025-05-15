@@ -1,19 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
-    {% include 'header.html' %}
-    <main>
-        <section class="about">
-            <h1>GS-Oasis</h1>
-            <p>Helping the less confident in this area</p>
-        </section>
-    </main>
-    {% include 'footer.html' %}
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="about">
+    <h1>GS-Oasis</h1>
+    <p>Helping the less confident in this area</p>
+</section>
+{% endblock %}
