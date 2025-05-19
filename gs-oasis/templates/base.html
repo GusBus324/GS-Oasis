@@ -6,6 +6,7 @@
     <title>GS Oasis - Scam Prevention & Identification</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/ai-assistant.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     {% block head %}{% endblock %}
 </head>
 <body>
@@ -32,10 +33,12 @@
                     {% endif %}
                     <li><a href="{{ url_for('resources') }}">Resources</a></li>
                     <li><a href="{{ url_for('about') }}">About</a></li>
-                    {% if 'user_id' in session %}
-                    <li><a href="{{ url_for('logout') }}" class="logout-btn">Logout</a></li>
-                    {% endif %}
                 </ul>
+                {% if 'user_id' in session %}
+                <div class="user-menu">
+                    <a href="{{ url_for('logout') }}" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+                {% endif %}
             </nav>
         </div>
     </header>

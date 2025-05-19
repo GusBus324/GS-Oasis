@@ -40,10 +40,15 @@ header .container {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
 }
 
 nav {
     margin: 10px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex: 1;
 }
 
 nav ul {
@@ -1049,5 +1054,94 @@ section h2 {
     
     .welcome-animation {
         padding-right: 15px;
+    }
+}
+
+/* User menu styles */
+.user-menu {
+    display: flex;
+    align-items: center;
+    margin-left: 15px;
+}
+
+.logout-btn {
+    background-color: rgba(255, 140, 66, 0.2);
+    color: #fff;
+    padding: 5px 12px;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    border: 1px solid rgba(255, 140, 66, 0.3);
+}
+
+.logout-btn:hover {
+    background-color: rgba(255, 140, 66, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 3px 6px rgba(255, 140, 66, 0.2);
+}
+
+/* Scam statistics grid styles */
+.scam-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.scam-stat-item {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.scam-stat-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+}
+
+.scam-stat-icon {
+    font-size: 2rem;
+    margin-right: 15px;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.scam-stat-content h3 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+    color: var(--primary-color);
+}
+
+.scam-stat-content p {
+    font-size: 0.95rem;
+    color: var(--dark-color);
+    opacity: 0.85;
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .scam-stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    nav {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .user-menu {
+        margin-left: 0;
+        margin-top: 10px;
+        align-self: flex-end;
     }
 }

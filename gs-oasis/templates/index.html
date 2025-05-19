@@ -405,10 +405,44 @@
     </section>
 
     <div class="cta-section">
+        {% if 'user_id' in session %}
+        <h2>Scam Statistics and Trends</h2>
+        <div class="scam-stats-grid">
+            <div class="scam-stat-item">
+                <div class="scam-stat-icon">📱</div>
+                <div class="scam-stat-content">
+                    <h3>62%</h3>
+                    <p>Of scams are initiated through mobile devices</p>
+                </div>
+            </div>
+            <div class="scam-stat-item">
+                <div class="scam-stat-icon">💳</div>
+                <div class="scam-stat-content">
+                    <h3>$5.8B</h3>
+                    <p>Lost to internet scams globally in 2024</p>
+                </div>
+            </div>
+            <div class="scam-stat-item">
+                <div class="scam-stat-icon">👵</div>
+                <div class="scam-stat-content">
+                    <h3>33%</h3>
+                    <p>Of seniors have encountered online scams in the past year</p>
+                </div>
+            </div>
+            <div class="scam-stat-item">
+                <div class="scam-stat-icon">🔍</div>
+                <div class="scam-stat-content">
+                    <h3>27%</h3>
+                    <p>Increase in AI-generated phishing attempts since 2023</p>
+                </div>
+            </div>
+        </div>
+        {% else %}
         <h2>Become a part of our thriving community!</h2>
         <p>Sign up now to unlock exclusive services. Already a member? Log in to continue your journey with us.</p>
         <a href="{{ url_for('register') }}" class="btn btn-primary">Sign Up</a>
         <a href="{{ url_for('login') }}" class="btn btn-secondary">Log In</a>
+        {% endif %}
     </div>
     {% endblock %}
     
