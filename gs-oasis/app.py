@@ -729,11 +729,12 @@ def analyze_image_content(image_path):
                 except Exception as e:
                     analysis_results.append(f"OCR failed: {str(e)}")
             else:
-                analysis_results.append("OCR (text recognition) is not available - install tesseract for text detection")
+                analysis_results.append("OCR (text recognition) is not available - using enhanced image analysis")
+                extracted_text = "Text extraction unavailable without Tesseract OCR"
                 
                 # AI-based image pattern analysis (when OCR is unavailable)
                 # This is a simplified pattern recognition system as a fallback
-                performed_checks.append("AI pattern recognition")
+                performed_checks.append("Enhanced image analysis")
                 
                 # Convert to bytes for analysis
                 img_bytes = io.BytesIO()
@@ -1081,4 +1082,4 @@ def preprocess_image_for_ocr(img):
         return img
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5001)  # Changed port from 5000 to 5001
+    app.run(debug=True, port=5002)  # Changed port from 5001 to 5002 to resolve port conflict

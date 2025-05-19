@@ -46,6 +46,20 @@ def check_tesseract():
         
         return False
 
+def check_permissions():
+    """Check if user has admin permissions"""
+    try:
+        # Try to write to a system directory
+        test_dir = "/usr/local/bin" if platform.system() != "Windows" else "C:\\Windows\\System32"
+        test_file = os.path.join(test_dir, "test_write_permissions.txt")
+        
+        with open(test_file, 'w') as f:
+            f.write("test")
+        os.remove(test_file)
+        return True
+    except (PermissionError, OSError):
+        return False
+
 def main():
     """Main function to check dependencies"""
     print("Checking OCR dependencies...\n")
@@ -60,12 +74,24 @@ def main():
         print("❌ OpenCV is not installed.")
         print("   Install it with: pip install opencv-python")
     
+    # Check if user has admin permissions
+    has_admin = check_permissions()
+    
     print("\nSummary:")
     if tesseract_ok:
         print("✅ OCR functionality should work correctly!")
     else:
         print("❌ OCR functionality will NOT work until Tesseract is installed.")
-        print("   Please follow the installation instructions above.")
+        
+        if not has_admin:
+            print("\n⚠️ Notice: You appear to be running without admin privileges.")
+            print("   This may prevent you from installing Tesseract.")
+            print("   Consider these alternatives:")
+            print("   1. Use GS Oasis without OCR functionality")
+            print("   2. Set up Google Cloud Vision API (see OCR_INSTALLATION.md)")
+            print("   3. Ask your system administrator for help installing Tesseract")
+        else:
+            print("   Please follow the installation instructions above.")
     
     print("\nNote: After installing Tesseract, you may need to restart your application.")
 
