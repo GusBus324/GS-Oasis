@@ -338,7 +338,11 @@ def scan_image():
                 if extracted_text and len(extracted_text) > 20:
                     # Only show a snippet if there's a lot of text
                     text_preview = extracted_text[:100] + "..." if len(extracted_text) > 100 else extracted_text
-                    result_msg += f"\n\nExtracted text sample: \"{text_preview}\""
+                    result_msg += f"\n\n<div class='extracted-text'><strong>📝 Extracted Text:</strong><br>\"{text_preview}\"</div>"
+                elif extracted_text:
+                    result_msg += f"\n\n<div class='extracted-text'><strong>📝 Extracted Text:</strong><br>\"{extracted_text}\"</div>"
+                else:
+                    result_msg += "\n\n<div class='extracted-text'><strong>📝 Text Extraction:</strong><br>No readable text was found in this image.</div>"
                 
                 # Add AI assistant recommendation
                 result_msg += "\n\n<div class='ai-recommendation'><strong>Have any more questions?</strong> Ask the GS Oasis AI Assistant for help and insight. <a href='/ai_assistant'>Try our AI Assistant →</a></div>"

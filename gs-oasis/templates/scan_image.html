@@ -5,7 +5,7 @@
     <div class="scanner-header">
         <div class="scanner-title">
             <h1>Scan Image</h1>
-            <p class="scanner-description">Upload an image to scan for potential threats. Our system analyzes images for suspicious content, hidden text, and common scam indicators.</p>
+            <p class="scanner-description">Upload an image to scan for potential threats. Our system analyzes images for suspicious content, extracts and analyzes text using OCR technology, and detects common scam indicators.</p>
         </div>
         <div class="scanner-icon">
             <i class="fas fa-image-shield"></i>
@@ -26,6 +26,7 @@
                 </div>
                 <div class="accepted-formats">
                     <p>Supported formats: JPG, PNG, GIF, BMP, TIFF</p>
+                    <p class="ocr-note">Our scanner will automatically extract and analyze all text in your image</p>
                 </div>
                 <button type="submit" class="btn btn-primary scan-btn">
                     <i class="fas fa-shield-check"></i> Scan Image
@@ -36,9 +37,18 @@
         <div class="info-card">
             <div class="card-header">
                 <i class="fas fa-info-circle"></i>
-                <h3>Common Scam Texts in Images</h3>
+                <h3>Text Analysis in Images</h3>
             </div>
             <div class="card-body">
+                <div class="feature-highlight">
+                    <div class="feature-icon">
+                        <i class="fas fa-file-text"></i>
+                    </div>
+                    <div class="feature-text">
+                        <h4>OCR Text Extraction</h4>
+                        <p>Our system uses Optical Character Recognition (OCR) to extract and analyze all visible text in your images, identifying potential scam content.</p>
+                    </div>
+                </div>
                 <div class="scam-type">
                     <div class="scam-icon">
                         <i class="fas fa-exclamation-triangle"></i>
@@ -80,6 +90,7 @@
                     <div>
                         <h4>How to Protect Yourself:</h4>
                         <ul>
+                            <li>Our scanner automatically extracts and analyzes all text in the image</li>
                             <li>Verify the sender through official channels before responding to any request</li>
                             <li>Never click links or scan QR codes from untrusted sources</li>
                             <li>Don't share personal or financial information in response to unsolicited messages</li>
@@ -231,6 +242,14 @@
         text-align: center;
     }
     
+    .ocr-note {
+        color: var(--primary-color);
+        font-weight: 500;
+        margin-top: 5px;
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    
     /* Info Card */
     .info-card {
         background: white;
@@ -297,6 +316,41 @@
     }
     
     .scam-text p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: var(--dark-color);
+        line-height: 1.4;
+    }
+    
+    /* Feature Highlight */
+    .feature-highlight {
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid rgba(0, 166, 183, 0.2);
+    }
+    
+    .feature-icon {
+        background-color: rgba(0, 166, 183, 0.1);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary-color);
+        font-size: 1rem;
+    }
+    
+    .feature-text h4 {
+        margin: 0 0 5px 0;
+        font-size: 1rem;
+        color: var(--primary-color);
+    }
+    
+    .feature-text p {
         margin: 0;
         font-size: 0.9rem;
         color: var(--dark-color);
