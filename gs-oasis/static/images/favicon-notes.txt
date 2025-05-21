@@ -1,0 +1,16 @@
+To create favicon.ico from the SVG file:
+
+1. Convert favicon.svg to PNG with an image editor or online converter
+2. Use a favicon generator like https://favicon.io/ or https://realfavicongenerator.net/ to create:
+   - favicon.ico (for older browsers)
+   - Various sizes of PNG files for different devices
+   - A web app manifest file
+   
+Place these files in the /static/images/ directory and update your base.html with the appropriate links.
+
+Best practice is to include multiple formats and sizes:
+- favicon.ico (16x16, 32x32)
+- apple-touch-icon.png (180x180)
+- favicon-32x32.png
+- favicon-16x16.png
+- site.webmanifest

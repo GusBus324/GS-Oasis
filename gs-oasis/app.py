@@ -7,6 +7,7 @@ import io
 import time
 import numpy as np
 from functools import wraps
+from datetime import timedelta
 import PyPDF2
 from PIL import Image
 import hashlib
@@ -34,19 +35,135 @@ os.makedirs(os.path.join(os.path.dirname(__file__), 'static/temp'), exist_ok=Tru
 
 # Initialize SQLite database
 def init_db():
+    print("Initializing database...")
     with sqlite3.connect('database.db') as conn:
         cursor = conn.cursor()
+        
+        # Create users table with all required columns
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT UNIQUE NOT NULL,
                 email TEXT NOT NULL,
-                password TEXT NOT NULL
+                password TEXT NOT NULL,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                last_login TEXT,
+                account_type TEXT DEFAULT 'standard'
             )
         ''')
+        
+        # Create scan_history table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS scan_history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER,
+                scan_date TEXT DEFAULT CURRENT_TIMESTAMP,
+                scan_type TEXT NOT NULL,
+                scan_item TEXT NOT NULL,
+                result TEXT NOT NULL,
+                FOREIGN KEY (user_id) REFERENCES users(id)
+            )
+        ''')
+        
+        # Create contact_messages table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS contact_messages (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                email TEXT NOT NULL,
+                subject TEXT NOT NULL,
+                message TEXT NOT NULL,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                is_read BOOLEAN DEFAULT 0
+            )
+        ''')
+        
+        # Now verify that all columns exist in the users table
+        cursor.execute("PRAGMA table_info(users)")
+        columns = [col[1] for col in cursor.fetchall()]
+        
+        # Add any missing columns
+        if 'created_at' not in columns:
+            cursor.execute("ALTER TABLE users ADD COLUMN created_at TEXT DEFAULT CURRENT_TIMESTAMP")
+            print("Added created_at column")
+        
+        if 'last_login' not in columns:
+            cursor.execute("ALTER TABLE users ADD COLUMN last_login TEXT")
+            print("Added last_login column")
+        
+        if 'account_type' not in columns:
+            cursor.execute("ALTER TABLE users ADD COLUMN account_type TEXT DEFAULT 'standard'")
+            print("Added account_type column")
+        
         conn.commit()
+        print("Database initialization completed successfully.")
+
+# Update database schema function
+def update_db_schema():
+    """
+    Updates the database schema to add any missing columns to existing tables.
+    Run this function when schema changes are made to ensure backward compatibility.
+    """
+    print("Checking and updating database schema...")
+    with sqlite3.connect('database.db') as conn:
+        cursor = conn.cursor()
+        
+        # Check if columns exist in users table and add them if missing
+        cursor.execute("PRAGMA table_info(users)")
+        existing_columns = [col[1] for col in cursor.fetchall()]
+        
+        # Add created_at column if it doesn't exist
+        if 'created_at' not in existing_columns:
+            print("Adding created_at column to users table")
+            cursor.execute("ALTER TABLE users ADD COLUMN created_at TEXT DEFAULT CURRENT_TIMESTAMP")
+        
+        # Add last_login column if it doesn't exist
+        if 'last_login' not in existing_columns:
+            print("Adding last_login column to users table")
+            cursor.execute("ALTER TABLE users ADD COLUMN last_login TEXT")
+        
+        # Add account_type column if it doesn't exist
+        if 'account_type' not in existing_columns:
+            print("Adding account_type column to users table")
+            cursor.execute("ALTER TABLE users ADD COLUMN account_type TEXT DEFAULT 'standard'")
+        
+        # Check if scan_history table exists
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='scan_history'")
+        if not cursor.fetchone():
+            print("Creating scan_history table")
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS scan_history (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER,
+                    scan_date TEXT DEFAULT CURRENT_TIMESTAMP,
+                    scan_type TEXT NOT NULL,
+                    scan_item TEXT NOT NULL,
+                    result TEXT NOT NULL,
+                    FOREIGN KEY (user_id) REFERENCES users(id)
+                )
+            ''')
+            
+        # Check if contact_messages table exists
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='contact_messages'")
+        if not cursor.fetchone():
+            print("Creating contact_messages table")
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS contact_messages (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    email TEXT NOT NULL,
+                    subject TEXT NOT NULL,
+                    message TEXT NOT NULL,
+                    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                    is_read BOOLEAN DEFAULT 0
+                )
+            ''')
+        
+        conn.commit()
+        print("Database schema update completed.")
 
 init_db()
+update_db_schema()  # Update the database schema to add any missing columns
 
 # Scam detection function - analyzes text for suspicious content
 def check_for_scam(text):
@@ -569,10 +686,19 @@ def register():
             return render_template('register.html')
 
         try:
+            current_time = time.strftime("%Y-%m-%d %H:%M:%S")
             with sqlite3.connect('database.db') as conn:
                 cursor = conn.cursor()
-                cursor.execute('INSERT INTO users (username, email, password) VALUES (?, ?, ?)', 
-                               (username, email, generate_password_hash(password)))
+                # Check if the created_at column exists
+                cursor.execute("PRAGMA table_info(users)")
+                columns = [col[1] for col in cursor.fetchall()]
+                
+                if 'created_at' in columns:
+                    cursor.execute('INSERT INTO users (username, email, password, created_at) VALUES (?, ?, ?, ?)', 
+                                  (username, email, generate_password_hash(password), current_time))
+                else:
+                    cursor.execute('INSERT INTO users (username, email, password) VALUES (?, ?, ?)', 
+                                  (username, email, generate_password_hash(password)))
                 conn.commit()
             flash('Registration successful! Please log in.', 'success')
             return redirect(url_for('login'))
@@ -587,19 +713,60 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-
+        remember = request.form.get('remember') == '1'
+        
         with sqlite3.connect('database.db') as conn:
             cursor = conn.cursor()
-            cursor.execute('SELECT password FROM users WHERE username = ?', (username,))
+            cursor.execute('SELECT id, password FROM users WHERE username = ?', (username,))
             user = cursor.fetchone()
 
-        if not user or not check_password_hash(user[0], password):
+        if not user or not check_password_hash(user[1], password):
             flash('Invalid username or password.', 'danger')
             return render_template('login.html')
 
-        session['user_id'] = username  # Store the username in session
+        # Store user information in session
+        session['user_id'] = user[0]
+        session['username'] = username
+        
+        # Set session expiration based on remember me
+        if remember:
+            # Session lasts for 30 days if remember me is checked
+            session.permanent = True
+            app.permanent_session_lifetime = timedelta(days=30)
+        else:
+            # Default session behavior (until browser is closed)
+            session.permanent = False
+        
+        # Update last login time
+        current_time = time.strftime("%Y-%m-%d %H:%M:%S")
+        
+        # First, make sure the last_login column exists
+        with sqlite3.connect('database.db') as conn:
+            cursor = conn.cursor()
+            # Check if the column exists
+            cursor.execute("PRAGMA table_info(users)")
+            columns = [col[1] for col in cursor.fetchall()]
+            
+            # Add the column if it doesn't exist
+            if 'last_login' not in columns:
+                try:
+                    cursor.execute("ALTER TABLE users ADD COLUMN last_login TEXT")
+                    print("Added missing last_login column")
+                except:
+                    print("Failed to add last_login column, but continuing...")
+            
+            # Now try to update the last_login time
+            try:
+                cursor.execute('UPDATE users SET last_login = ? WHERE id = ?', (current_time, user[0]))
+                conn.commit()
+                print(f"Updated last_login for user {username}")
+            except Exception as e:
+                print(f"Warning: Could not update last_login: {str(e)}")
+                # Continue without updating last_login
+                pass
+        
         flash('Login successful!', 'success')
-        return redirect(url_for('index'))
+        return redirect(url_for('dashboard'))
 
     return render_template('login.html')
 
@@ -626,6 +793,59 @@ def logout():
     session.clear()
     flash('You have been logged out successfully.', 'success')
     return redirect(url_for('index'))
+
+# Contact route
+@app.route('/contact', methods=['GET', 'POST'])
+def contact():
+    if request.method == 'POST':
+        name = request.form.get('name')
+        email = request.form.get('email')
+        subject = request.form.get('subject')
+        message = request.form.get('message')
+        
+        # Simple validation
+        if not all([name, email, subject, message]):
+            flash('All fields are required.', 'danger')
+            return redirect(url_for('contact'))
+        
+        # Email validation with regex
+        email_pattern = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+        if not email_pattern.match(email):
+            flash('Please enter a valid email address.', 'danger')
+            return redirect(url_for('contact'))
+            
+        # In a real application, you would save this to a database
+        # For demonstration, we'll store messages in the database
+        try:
+            with sqlite3.connect('database.db') as conn:
+                cursor = conn.cursor()
+                # Create contact_messages table if it doesn't exist
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS contact_messages (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        name TEXT NOT NULL,
+                        email TEXT NOT NULL,
+                        subject TEXT NOT NULL,
+                        message TEXT NOT NULL,
+                        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                        is_read BOOLEAN DEFAULT 0
+                    )
+                ''')
+                
+                # Insert the message
+                cursor.execute(
+                    'INSERT INTO contact_messages (name, email, subject, message) VALUES (?, ?, ?, ?)',
+                    (name, email, subject, message)
+                )
+                conn.commit()
+                
+            flash('Thank you for your message! We will get back to you soon.', 'success')
+            return redirect(url_for('contact'))
+        except Exception as e:
+            flash(f'An error occurred: {str(e)}', 'danger')
+            return redirect(url_for('contact'))
+        
+    return render_template('contact.html')
 
 # Image analysis utilities
 def analyze_image_content(image_path):
@@ -1081,5 +1301,139 @@ def preprocess_image_for_ocr(img):
         # If preprocessing fails, return the original image
         return img
 
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    """
+    User dashboard displaying account information, scan history, and statistics
+    """
+    # Get user information
+    username = session.get('username')
+    
+    # Connect to database
+    with sqlite3.connect('database.db') as conn:
+        cursor = conn.cursor()
+        
+        # First, check which columns exist in the users table
+        cursor.execute("PRAGMA table_info(users)")
+        columns = [col[1] for col in cursor.fetchall()]
+        
+        # Create dynamic query based on available columns
+        select_fields = ["email"]
+        if 'created_at' in columns:
+            select_fields.append('created_at')
+        if 'last_login' in columns:
+            select_fields.append('last_login')
+        
+        query = f"SELECT {', '.join(select_fields)} FROM users WHERE username = ?"
+        
+        # Get user details based on available columns
+        try:
+            cursor.execute(query, (username,))
+            user_data = cursor.fetchone()
+            
+            if user_data:
+                email = user_data[0]
+                
+                # Set defaults
+                join_date = "N/A"
+                last_login = "N/A"
+                
+                # Get values if columns exist
+                field_index = 1
+                if 'created_at' in columns and len(user_data) > field_index:
+                    join_date = user_data[field_index] if user_data[field_index] else "N/A"
+                    field_index += 1
+                    
+                if 'last_login' in columns and len(user_data) > field_index:
+                    last_login = user_data[field_index] if user_data[field_index] else "N/A"
+            else:
+                email = "N/A"
+                join_date = "N/A"
+                last_login = "N/A"
+        except sqlite3.Error as e:
+            # Handle any database errors
+            print(f"Database error: {str(e)}")
+            email = "N/A"
+            join_date = "N/A"
+            last_login = "N/A"
+        
+        # Mock data for stats (replace with real database queries in production)
+        scan_count = 23  # Total scans performed by user
+        threat_count = 5  # Threats detected
+        safe_count = 18  # Safe scans
+        remaining_scans = 50 - scan_count  # Daily limit
+        
+        # Format last_login time in a user-friendly way if it's available
+        if last_login != "N/A":
+            try:
+                # Try to parse the datetime string
+                login_time = time.strptime(last_login, "%Y-%m-%d %H:%M:%S")
+                today = time.strftime("%Y-%m-%d")
+                
+                # If login was today, show "Today, HH:MM AM/PM"
+                if time.strftime("%Y-%m-%d", login_time) == today:
+                    last_login = "Today, " + time.strftime("%I:%M %p", login_time)
+                else:
+                    # Otherwise show "Mon DD, YYYY, HH:MM AM/PM"
+                    last_login = time.strftime("%b %d, %Y, %I:%M %p", login_time)
+            except:
+                # If parsing fails, keep the original string
+                pass
+        
+        # Get current date in a nice format
+        current_date = time.strftime("%B %d, %Y")
+        
+        # Mock recent activities (replace with real data from scan history)
+        recent_activities = [
+            {
+                "date": "Today, 08:45 AM",
+                "type": "image",
+                "item": "screenshot.jpg",
+                "result": "safe"
+            },
+            {
+                "date": "Yesterday, 02:30 PM",
+                "type": "link",
+                "item": "https://example.com/login",
+                "result": "suspicious"
+            },
+            {
+                "date": "Jun 14, 11:20 AM",
+                "type": "file",
+                "item": "invoice.pdf",
+                "result": "dangerous"
+            },
+            {
+                "date": "Jun 13, 04:15 PM",
+                "type": "link",
+                "item": "https://safedomain.com",
+                "result": "safe"
+            }
+        ]
+    
+    return render_template('dashboard.html', 
+                          username=username,
+                          email=email, 
+                          join_date=join_date,
+                          current_date=current_date,
+                          scan_count=scan_count,
+                          threat_count=threat_count,
+                          safe_count=safe_count,
+                          remaining_scans=remaining_scans,
+                          last_login=last_login,
+                          recent_activities=recent_activities)
+
+@app.route('/robots.txt')
+def robots():
+    return send_from_directory(app.static_folder, 'robots.txt')
+
+@app.route('/sitemap.xml')
+def sitemap():
+    return send_from_directory(app.static_folder, 'sitemap.xml')
+
 if __name__ == '__main__':
+    # Update the database schema on startup
+    update_db_schema()
+    
     app.run(debug=True, port=5002)  # Changed port from 5001 to 5002 to resolve port conflict

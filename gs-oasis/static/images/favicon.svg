@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64px" height="64px" viewBox="0 0 64 64" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <title>GS-Oasis Favicon</title>
+  <g stroke="none" fill="none">
+    <circle fill="#1a2a6c" cx="32" cy="32" r="32"></circle>
+    <path d="M32,10 C45.2548,10 56,20.7452 56,34 C56,47.2548 45.2548,58 32,58 C18.7452,58 8,47.2548 8,34 C8,20.7452 18.7452,10 32,10 Z" fill="#3b5998"></path>
+    <path d="M32,14 C43.0457,14 52,22.9543 52,34 C52,45.0457 43.0457,54 32,54 C20.9543,54 12,45.0457 12,34 C12,22.9543 20.9543,14 32,14 Z" fill="#2a4065"></path>
+    <path d="M32,21 C39.1797,21 45,26.8203 45,34 C45,41.1797 39.1797,47 32,47 C24.8203,47 19,41.1797 19,34 C19,26.8203 24.8203,21 32,21 Z" fill="#FF8C00"></path>
+    <path d="M28,28 L36,28 L36,32 L28,32 L28,40 L24,40 L24,28 L28,28 Z" fill="white"></path>
+    <path d="M40,28 L40,40 L36,40 L36,36 L32,36 L32,32 L36,32 L36,28 L40,28 Z" fill="white"></path>
+  </g>
+</svg>

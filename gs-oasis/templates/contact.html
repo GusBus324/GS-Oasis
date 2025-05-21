@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Contact <span class="highlight">Us</span></h1>
+    <p class="subtitle">We'd love to hear from you. Send us a message and we'll respond as soon as possible.</p>
+</div>
+
+<div class="contact-container">
+    <div class="contact-info">
+        <div class="contact-card">
+            <div class="contact-icon">
+                <i class="fas fa-envelope"></i>
+            </div>
+            <h3>Email Us</h3>
+            <p>For general inquiries:</p>
+            <a href="mailto:contact@gs-oasis.com">contact@gs-oasis.com</a>
+            <p>For technical support:</p>
+            <a href="mailto:support@gs-oasis.com">support@gs-oasis.com</a>
+        </div>
+
+        <div class="contact-card">
+            <div class="contact-icon">
+                <i class="fas fa-phone"></i>
+            </div>
+            <h3>Call Us</h3>
+            <p>Customer Service:</p>
+            <a href="tel:+11234567890">(123) 456-7890</a>
+            <p>Operating Hours:</p>
+            <p>Mon - Fri: 9:00 AM - 5:00 PM</p>
+        </div>
+
+        <div class="contact-card">
+            <div class="contact-icon">
+                <i class="fas fa-map-marker-alt"></i>
+            </div>
+            <h3>Visit Us</h3>
+            <p>Alfred street</p>
+            <p>Brookvale</p>
+            <p>Australia</p>
+        </div>
+    </div>
+
+    <div class="contact-form-container">
+        <h2>Send Us a Message</h2>
+        <form class="contact-form" action="{{ url_for('contact') }}" method="POST">
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" required placeholder="Your full name">
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required placeholder="Your email address">
+            </div>
+            
+            <div class="form-group">
+                <label for="subject">Subject</label>
+                <input type="text" id="subject" name="subject" required placeholder="Subject of your message">
+            </div>
+            
+            <div class="form-group">
+                <label for="message">Message</label>
+                <textarea id="message" name="message" rows="6" required placeholder="Type your message here..."></textarea>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Send Message</button>
+        </form>
+    </div>
+</div>
+
+<div class="faq-section">
+    <h2>Frequently Asked <span class="highlight">Questions</span></h2>
+    <div class="faq-grid">
+        <div class="faq-item">
+            <h3>How does GS Oasis protect me online?</h3>
+            <p>GS Oasis provides tools to scan and verify images, links, and files for potential scams and security threats. Our AI-powered system analyzes content for common scam indicators and provides information to help you make safer decisions online.</p>
+        </div>
+        
+        <div class="faq-item">
+            <h3>Is my data safe with GS Oasis?</h3>
+            <p>We take data privacy seriously. All scans are processed securely, and we don't store your scanned content permanently. Your personal information is protected according to our Privacy Policy, and we never share it with third parties.</p>
+        </div>
+        
+        <div class="faq-item">
+            <h3>How accurate is the scam detection?</h3>
+            <p>Our scam detection system has a 98% accuracy rate. However, new scam techniques emerge constantly, so we always encourage users to exercise caution even when our system doesn't detect a threat.</p>
+        </div>
+        
+        <div class="faq-item">
+            <h3>Is there a limit to how many scans I can perform?</h3>
+            <p>Standard accounts can perform up to 50 scans per day. If you need more, please contact us about our premium options.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

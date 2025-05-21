@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="dashboard-container">
+    <button class="sidebar-toggle" aria-label="Toggle sidebar">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <div class="dashboard-sidebar">
+        <div class="user-profile">
+            <div class="avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <h3>{{ username }}</h3>
+            <p>Member since: {{ join_date }}</p>
+        </div>
+        
+        <nav class="dashboard-nav">
+            <ul>
+                <li class="active"><a href="{{ url_for('dashboard') }}"><i class="fas fa-tachometer-alt"></i> Overview</a></li>
+                <li><a href="#history"><i class="fas fa-history"></i> Scan History</a></li>
+                <li><a href="#settings"><i class="fas fa-cog"></i> Settings</a></li>
+                <li><a href="#security"><i class="fas fa-shield-alt"></i> Security</a></li>
+                <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </nav>
+    </div>
+    
+    <div class="dashboard-main">
+        <div class="dashboard-header">
+            <h1>Welcome back, <span class="highlight">{{ username }}</span></h1>
+            <div class="date">{{ current_date }}</div>
+        </div>
+        
+        <div class="stats-overview">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="stat-details">
+                    <h3>{{ scan_count }}</h3>
+                    <p>Total Scans</p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stat-details">
+                    <h3>{{ threat_count }}</h3>
+                    <p>Threats Detected</p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon success">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-details">
+                    <h3>{{ safe_count }}</h3>
+                    <p>Safe Items</p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon info">
+                    <i class="fas fa-question-circle"></i>
+                </div>
+                <div class="stat-details">
+                    <h3>{{ remaining_scans }}</h3>
+                    <p>Scans Remaining</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="quick-actions">
+            <h2>Quick Actions</h2>
+            <div class="action-buttons">
+                <a href="{{ url_for('scan_image') }}" class="action-btn">
+                    <i class="fas fa-image"></i>
+                    <span>Scan Image</span>
+                </a>
+                <a href="{{ url_for('scan_link') }}" class="action-btn">
+                    <i class="fas fa-link"></i>
+                    <span>Verify Link</span>
+                </a>
+                <a href="{{ url_for('scan_file') }}" class="action-btn">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Check File</span>
+                </a>
+                <a href="{{ url_for('ai_assistant') }}" class="action-btn">
+                    <i class="fas fa-robot"></i>
+                    <span>AI Assistant</span>
+                </a>
+            </div>
+        </div>
+        
+        <section id="history" class="recent-activity">
+            <div class="section-header">
+                <h2>Recent Scan Activity</h2>
+                <a href="#" class="view-all">View All</a>
+            </div>
+            
+            <div class="activity-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date & Time</th>
+                            <th>Type</th>
+                            <th>Item</th>
+                            <th>Result</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for activity in recent_activities %}
+                        <tr>
+                            <td>{{ activity.date }}</td>
+                            <td>
+                                {% if activity.type == 'image' %}
+                                <span class="badge image">Image</span>
+                                {% elif activity.type == 'link' %}
+                                <span class="badge link">Link</span>
+                                {% elif activity.type == 'file' %}
+                                <span class="badge file">File</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ activity.item }}</td>
+                            <td>
+                                {% if activity.result == 'safe' %}
+                                <span class="badge success">Safe</span>
+                                {% elif activity.result == 'suspicious' %}
+                                <span class="badge warning">Suspicious</span>
+                                {% elif activity.result == 'dangerous' %}
+                                <span class="badge danger">Dangerous</span>
+                                {% endif %}
+                            </td>
+                            <td><a href="#" class="btn-text">View Details</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        
+        <div class="dashboard-row">
+            <section id="security" class="security-tips">
+                <h2>Security Tips</h2>
+                <div class="tip-list">
+                    <div class="tip-item">
+                        <div class="tip-icon"><i class="fas fa-lock"></i></div>
+                        <div class="tip-content">
+                            <h3>Update Your Passwords</h3>
+                            <p>Change your passwords regularly and use different ones for each account.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="tip-item">
+                        <div class="tip-icon"><i class="fas fa-envelope"></i></div>
+                        <div class="tip-content">
+                            <h3>Be Wary of Unexpected Emails</h3>
+                            <p>Don't click links or download attachments from suspicious emails.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="tip-item">
+                        <div class="tip-icon"><i class="fas fa-wifi"></i></div>
+                        <div class="tip-content">
+                            <h3>Use Secure Networks</h3>
+                            <p>Avoid accessing sensitive accounts on public Wi-Fi networks.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="settings" class="account-summary">
+                <h2>Account Summary</h2>
+                <div class="account-details">
+                    <div class="detail-row">
+                        <div class="detail-label">Account Type</div>
+                        <div class="detail-value">Standard</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Email</div>
+                        <div class="detail-value">{{ email }}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Scans Used</div>
+                        <div class="detail-value">{{ scan_count }} / 50 daily</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Last Login</div>
+                        <div class="detail-value">{{ last_login }}</div>
+                    </div>
+                    <div class="detail-buttons">
+                        <a href="#" class="btn btn-primary">Edit Profile</a>
+                        <a href="#" class="btn btn-secondary">Change Password</a>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -4,6 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GS Oasis - Scam Prevention & Identification</title>
+    <meta name="description" content="GS Oasis helps identify, counter, and protect you from online scams through advanced AI analysis.">
+    <meta name="keywords" content="scam prevention, phishing protection, online security, AI scam detection">
+    <meta name="author" content="GS Oasis Team">
+    <meta property="og:title" content="GS Oasis - Scam Prevention & Identification">
+    <meta property="og:description" content="GS Oasis helps identify, counter, and protect you from online scams through advanced AI analysis.">
+    <meta property="og:image" content="{{ url_for('static', filename='images/Logo.png', _external=True) }}">
+    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    
+    <!-- Favicon links -->
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='images/favicon.svg') }}">
+    
+    <!-- Structured data for search engines -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "GS Oasis",
+        "url": "https://gs-oasis.com",
+        "logo": "{{ url_for('static', filename='images/Logo.png', _external=True) }}",
+        "description": "GS Oasis helps identify, counter, and protect you from online scams through advanced AI analysis.",
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "telephone": "+1-123-456-7890",
+            "contactType": "customer service",
+            "email": "contact@gs-oasis.com"
+        },
+        "sameAs": [
+            "https://facebook.com/gs-oasis",
+            "https://twitter.com/gs-oasis",
+            "https://linkedin.com/company/gs-oasis"
+        ]
+    }
+    </script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/ai-assistant.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -26,6 +62,7 @@
                     <li><a href="{{ url_for('scan_link') }}">Link Scan</a></li>
                     <li><a href="{{ url_for('scan_file') }}">File Scan</a></li>
                     <li><a href="{{ url_for('ai_assistant') }}">AI Assistant</a></li>
+                    <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
                     {% else %}
                     <!-- Auth links for guests -->
                     <li><a href="{{ url_for('register') }}">Sign Up</a></li>
@@ -33,6 +70,7 @@
                     {% endif %}
                     <li><a href="{{ url_for('resources') }}">Resources</a></li>
                     <li><a href="{{ url_for('about') }}">About</a></li>
+                    <li><a href="{{ url_for('contact') }}">Contact</a></li>
                 </ul>
                 {% if 'user_id' in session %}
                 <div class="user-menu">
@@ -57,13 +95,21 @@
         </div>
     </main>
 
-    <footer>
-        <div class="container">
-            <p>&copy; 2025 GS Oasis. All rights reserved.</p>
-            <p>A platform dedicated to scam prevention and identification.</p>
-        </div>
-    </footer>
+    {% include 'footer.html' %}
 
+    <!-- Core JavaScript -->
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    <!-- Conditional JavaScript -->
+    {% if request.path == '/dashboard' %}
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    {% endif %}
+    
+    {% if request.path == '/scan_image' or request.path == '/scan_link' or request.path == '/scan_file' %}
+    <script src="{{ url_for('static', filename='js/scan.js') }}"></script>
+    {% endif %}
+    
+    {% block scripts %}{% endblock %}
 </body>
 </html>

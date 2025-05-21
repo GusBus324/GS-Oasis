@@ -1,0 +1,17 @@
+# robots.txt for GS-Oasis
+# Optimized for search engines
+
+User-agent: *
+Allow: /
+Allow: /about
+Allow: /resources
+Allow: /contact
+
+Disallow: /static/temp/
+Disallow: /scan_results
+Disallow: /users
+Disallow: /login
+Disallow: /register
+Disallow: /logout
+
+Sitemap: https://gs-oasis.com/sitemap.xml

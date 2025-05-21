@@ -1,0 +1,6 @@
+/* This is a placeholder. You need to convert the SVG to PNG with an image editor */
+/* Since this environment doesn't support image generation, you'll need to:
+   1. Open the favicon.svg file in an image editor or use an online converter
+   2. Export/save as PNG with the name 'favicon.png'
+   3. Place it in the same folder (/static/images/) 
+*/
