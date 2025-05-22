@@ -16,18 +16,33 @@ def update_db_schema():
         
         # Add created_at column if it doesn't exist
         if 'created_at' not in existing_columns:
-            print("Adding created_at column to users table")
-            cursor.execute("ALTER TABLE users ADD COLUMN created_at TEXT DEFAULT CURRENT_TIMESTAMP")
+            try:
+                # Add column without default
+                cursor.execute("ALTER TABLE users ADD COLUMN created_at TEXT")
+                # Then update it with current timestamp
+                cursor.execute("UPDATE users SET created_at = datetime('now') WHERE created_at IS NULL")
+                print("Added created_at column")
+            except sqlite3.OperationalError as e:
+                print(f"Note: {e}")
         
         # Add last_login column if it doesn't exist
         if 'last_login' not in existing_columns:
-            print("Adding last_login column to users table")
-            cursor.execute("ALTER TABLE users ADD COLUMN last_login TEXT")
+            try:
+                cursor.execute("ALTER TABLE users ADD COLUMN last_login TEXT")
+                print("Added last_login column")
+            except sqlite3.OperationalError as e:
+                print(f"Note: {e}")
         
         # Add account_type column if it doesn't exist
         if 'account_type' not in existing_columns:
-            print("Adding account_type column to users table")
-            cursor.execute("ALTER TABLE users ADD COLUMN account_type TEXT DEFAULT 'standard'")
+            try:
+                # Add column without default first
+                cursor.execute("ALTER TABLE users ADD COLUMN account_type TEXT")
+                # Then set the default value
+                cursor.execute("UPDATE users SET account_type = 'standard' WHERE account_type IS NULL")
+                print("Added account_type column")
+            except sqlite3.OperationalError as e:
+                print(f"Note: {e}")
         
         # Check if scan_history table exists
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='scan_history'")

@@ -23,6 +23,44 @@
             <p class="result-message">{{ result|safe }}</p>
         </div>
         
+        {% if scan_type == 'image' %}
+        <div class="scan-tech-explanation">
+            <h3>About Our Image Analysis Technology</h3>
+            <div class="tech-details">
+                <div class="tech-section">
+                    <h4>Visual Analysis</h4>
+                    <p>Our scanner examines the visual properties of your image:</p>
+                    <ul>
+                        <li><strong>Image Integrity:</strong> We check for signs of manipulation, unusual dimensions, and suspicious compression artifacts</li>
+                        <li><strong>Hidden Elements:</strong> We detect transparent pixels, unusual color distributions, and other techniques used to hide malicious content</li>
+                        <li><strong>Perceptual Hash:</strong> We compare key visual features against known scam patterns</li>
+                        <li><strong>Metadata Analysis:</strong> We examine hidden information in file headers and EXIF data</li>
+                    </ul>
+                </div>
+                <div class="tech-section">
+                    <h4>Text Recognition</h4>
+                    <p>Our advanced OCR technology:</p>
+                    <ul>
+                        <li><strong>Multi-pass OCR:</strong> We use multiple image processing techniques to ensure all text is captured</li>
+                        <li><strong>Image Preprocessing:</strong> We enhance image quality with filters to improve text extraction</li>
+                        <li><strong>Text Analysis:</strong> We scan extracted text for over 100 scam indicators and patterns</li>
+                        <li><strong>Language Processing:</strong> We detect urgency, threats, promises, and other manipulation tactics</li>
+                    </ul>
+                </div>
+                <div class="tech-section">
+                    <h4>Specialized Detection</h4>
+                    <p>Additional security features:</p>
+                    <ul>
+                        <li><strong>QR Code Analysis:</strong> We decode QR codes and analyze contained URLs for malicious content</li>
+                        <li><strong>Steganography Detection:</strong> We check for hidden data concealed in image pixels</li>
+                        <li><strong>File Format Validation:</strong> We verify file headers and formats to detect tampering</li>
+                        <li><strong>Entropy Analysis:</strong> We measure information density to identify suspicious patterns</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
         <div class="result-actions">
             {% if scan_type == 'image' %}
                 <a href="{{ url_for('scan_image') }}" class="btn btn-secondary">Scan Another Image</a>
@@ -168,6 +206,87 @@
     .ai-recommendation a:hover {
         background-color: var(--primary-color);
         transform: translateY(-2px);
+    }
+    
+    /* Scan Technology Explanation */
+    .scan-tech-explanation {
+        margin: 30px 0;
+        padding: 20px;
+        background-color: #f8f9fc;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+        border-left: 4px solid var(--secondary-color);
+    }
+    
+    .scan-tech-explanation h3 {
+        color: var(--primary-color);
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 1.25rem;
+        position: relative;
+        padding-bottom: 10px;
+    }
+    
+    .scan-tech-explanation h3:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 3px;
+        background-color: var(--secondary-color);
+        border-radius: 2px;
+    }
+    
+    .tech-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-top: 15px;
+    }
+    
+    .tech-section {
+        background-color: white;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #eaeaea;
+        transition: all 0.2s ease;
+    }
+    
+    .tech-section:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.08);
+    }
+    
+    .tech-section h4 {
+        color: var(--secondary-color);
+        font-size: 1.1rem;
+        margin-bottom: 10px;
+        padding-left: 10px;
+        border-left: 3px solid var(--primary-color);
+    }
+    
+    .tech-section p {
+        font-size: 0.95rem;
+        margin-bottom: 10px;
+        color: #444;
+    }
+    
+    .tech-section ul {
+        padding-left: 18px;
+        margin-bottom: 0;
+    }
+    
+    .tech-section li {
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        color: #555;
+    }
+    
+    .tech-section strong {
+        color: var(--primary-color);
     }
 </style>
 {% endblock %}
