@@ -1,0 +1,135 @@
+/* Dashboard container without sidebar */
+.dashboard-container {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 200px);
+    position: relative;
+    z-index: 1;
+}
+
+/* Top Navigation Styling */
+.dashboard-topnav {
+    background: var(--primary-color);
+    color: #fff;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    margin-bottom: 20px;
+    border-radius: 8px;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.welcome-message {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.member-since {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.top-nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 15px;
+}
+
+.top-nav a {
+    color: white;
+    text-decoration: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+
+.top-nav a i {
+    margin-right: 5px;
+}
+
+.top-nav a:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.top-nav a.active {
+    background: rgba(255, 255, 255, 0.2);
+    font-weight: 600;
+}
+
+.top-nav .logout-btn {
+    background: rgba(255, 118, 117, 0.1);
+    color: #fff;
+}
+
+.top-nav .logout-btn:hover {
+    background: rgba(255, 118, 117, 0.3);
+}
+
+/* Main content area without sidebar */
+.dashboard-main {
+    flex: 1;
+    padding: 20px;
+    background-color: #f8f9fa;
+    width: 100%;
+    box-sizing: border-box;
+    margin-left: 0;
+}
+
+/* Responsive adjustments for top nav */
+@media (max-width: 768px) {
+    .dashboard-topnav {
+        flex-direction: column;
+    }
+    
+    .user-info {
+        margin-bottom: 15px;
+        text-align: center;
+    }
+    
+    .top-nav {
+        justify-content: center;
+    }
+}
+
+/* Internal page navigation */
+.page-nav {
+    background: #fff;
+    border-radius: 8px;
+    padding: 10px 15px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    display: flex;
+    overflow-x: auto;
+    gap: 15px;
+}
+
+.page-nav a {
+    color: var(--primary-color);
+    text-decoration: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.page-nav a:hover {
+    background: var(--light-color);
+}
+
+.page-nav a.active {
+    background: var(--primary-color);
+    color: white;
+}

@@ -1193,77 +1193,7 @@ section h2 {
     min-height: 800px;
 }
 
-.dashboard-sidebar {
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-    padding: 25px;
-    position: sticky;
-    top: 100px;
-    height: fit-content;
-}
-
-.user-profile {
-    text-align: center;
-    padding-bottom: 20px;
-    margin-bottom: 20px;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.avatar {
-    width: 80px;
-    height: 80px;
-    background: linear-gradient(45deg, var(--primary-color), #3b5998);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 15px;
-    color: white;
-    font-size: 2rem;
-}
-
-.user-profile h3 {
-    font-size: 1.2rem;
-    margin-bottom: 5px;
-    color: var(--primary-color);
-}
-
-.user-profile p {
-    color: #777;
-    font-size: 0.9rem;
-}
-
-.dashboard-nav ul {
-    list-style: none;
-    padding: 0;
-}
-
-.dashboard-nav li {
-    margin-bottom: 10px;
-}
-
-.dashboard-nav a {
-    display: flex;
-    align-items: center;
-    padding: 12px 15px;
-    border-radius: 6px;
-    text-decoration: none;
-    color: #555;
-    transition: all 0.3s ease;
-}
-
-.dashboard-nav a i {
-    margin-right: 10px;
-    width: 20px;
-    text-align: center;
-}
-
-.dashboard-nav li.active a, 
-.dashboard-nav a:hover {
-    background: rgba(26, 42, 108, 0.05);
-    color: var(--primary-color);
-}
+/* Sidebar styles removed as we've moved to a top navigation layout */
 
 .dashboard-main {
     flex: 1;
@@ -1648,29 +1578,7 @@ section h2 {
     }
 }
 
-/* Mobile dashboard toggle button */
-.sidebar-toggle {
-    display: none;
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    z-index: 999;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s ease;
-}
-
-.sidebar-toggle:hover {
-    transform: scale(1.05);
-    background: var(--secondary-color);
-}
+/* Mobile sidebar toggle button removed as we now use top navigation */
 
 /* Action buttons animations */
 .action-btn {

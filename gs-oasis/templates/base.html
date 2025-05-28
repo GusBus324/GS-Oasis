@@ -42,6 +42,9 @@
     </script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/ai-assistant.css') }}">
+    {% if request.path == url_for('dashboard') %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    {% endif %}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     {% block head %}{% endblock %}
 </head>
@@ -99,6 +102,9 @@
 
     <!-- Core JavaScript -->
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    {% if request.path == url_for('dashboard') %}
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    {% endif %}
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     
     <!-- Conditional JavaScript -->

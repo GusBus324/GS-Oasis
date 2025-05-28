@@ -2,27 +2,19 @@
 
 {% block content %}
 <div class="dashboard-container">
-    <button class="sidebar-toggle" aria-label="Toggle sidebar">
-        <i class="fas fa-bars"></i>
-    </button>
-    
-    <div class="dashboard-sidebar">
-        <div class="user-profile">
-            <div class="avatar">
-                <i class="fas fa-user"></i>
-            </div>
-            <h3>{{ username }}</h3>
-            <p>Member since: {{ join_date }}</p>
+    <!-- Top navigation bar instead of sidebar -->
+    <div class="dashboard-topnav">
+        <div class="user-info">
+            <span class="welcome-message">Welcome, {{ username }}</span>
+            <span class="member-since">Member since: {{ join_date }}</span>
         </div>
-        
-        <nav class="dashboard-nav">
-            <ul>
-                <li class="active"><a href="{{ url_for('dashboard') }}"><i class="fas fa-tachometer-alt"></i> Overview</a></li>
-                <li><a href="#history"><i class="fas fa-history"></i> Scan History</a></li>
-                <li><a href="#settings"><i class="fas fa-cog"></i> Settings</a></li>
-                <li><a href="#security"><i class="fas fa-shield-alt"></i> Security</a></li>
-                <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-            </ul>
+        <nav class="top-nav">
+            <a href="{{ url_for('dashboard') }}" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="{{ url_for('scan_image') }}"><i class="fas fa-image"></i> Scan Image</a>
+            <a href="{{ url_for('scan_link') }}"><i class="fas fa-link"></i> Scan Link</a>
+            <a href="{{ url_for('scan_file') }}"><i class="fas fa-file-alt"></i> Scan File</a>
+            <a href="{{ url_for('ai_assistant') }}"><i class="fas fa-robot"></i> AI Assistant</a>
+            <a href="{{ url_for('logout') }}" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </nav>
     </div>
     
@@ -75,24 +67,44 @@
         </div>
         
         <div class="quick-actions">
-            <h2>Quick Actions</h2>
+            <h2>Account Overview</h2>
             <div class="action-buttons">
-                <a href="{{ url_for('scan_image') }}" class="action-btn">
-                    <i class="fas fa-image"></i>
-                    <span>Scan Image</span>
-                </a>
-                <a href="{{ url_for('scan_link') }}" class="action-btn">
-                    <i class="fas fa-link"></i>
-                    <span>Verify Link</span>
-                </a>
-                <a href="{{ url_for('scan_file') }}" class="action-btn">
-                    <i class="fas fa-file-alt"></i>
-                    <span>Check File</span>
-                </a>
-                <a href="{{ url_for('ai_assistant') }}" class="action-btn">
-                    <i class="fas fa-robot"></i>
-                    <span>AI Assistant</span>
-                </a>
+                <div class="account-stat">
+                    <div class="stat-icon">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span>Account Type</span>
+                        <strong>Standard</strong>
+                    </div>
+                </div>
+                <div class="account-stat">
+                    <div class="stat-icon success">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span>Member Since</span>
+                        <strong>{{ join_date }}</strong>
+                    </div>
+                </div>
+                <div class="account-stat">
+                    <div class="stat-icon warning">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span>Last Login</span>
+                        <strong>{{ last_login }}</strong>
+                    </div>
+                </div>
+                <div class="account-stat">
+                    <div class="stat-icon info">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span>Email</span>
+                        <strong>{{ email }}</strong>
+                    </div>
+                </div>
             </div>
         </div>
         

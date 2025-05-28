@@ -4,21 +4,17 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Mobile sidebar toggle
-    const sidebarToggle = document.querySelector('.sidebar-toggle');
-    if (sidebarToggle) {
-        sidebarToggle.addEventListener('click', function() {
-            document.querySelector('.dashboard-sidebar').classList.toggle('active');
-        });
-    }
-    
-    // Navigation highlight
+    // Navigation highlight for top navigation
     const currentPath = window.location.pathname;
-    const navLinks = document.querySelectorAll('.dashboard-nav a');
+    const navLinks = document.querySelectorAll('.top-nav a');
     
     navLinks.forEach(link => {
-        if (link.getAttribute('href') === currentPath) {
-            link.parentElement.classList.add('active');
+        const href = link.getAttribute('href');
+        // Match exact paths or handle internal links
+        if (href === currentPath || 
+            (href.startsWith('/') && currentPath === href) || 
+            (href.startsWith('#'))) {
+            link.classList.add('active');
         }
         
         // Add click handler for internal tabs
@@ -29,11 +25,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Remove active class from all links
                 navLinks.forEach(innerLink => {
-                    innerLink.parentElement.classList.remove('active');
+                    innerLink.classList.remove('active');
                 });
                 
                 // Add active class to clicked link
-                this.parentElement.classList.add('active');
+                this.classList.add('active');
                 
                 // Scroll to section
                 const targetId = this.getAttribute('href').substring(1);
@@ -77,6 +73,18 @@ document.addEventListener('DOMContentLoaded', function() {
         
         btn.addEventListener('mouseleave', function() {
             this.classList.remove('pulse');
+        });
+    });
+    
+    // Add hover effect to stat cards
+    const statCards = document.querySelectorAll('.stat-card');
+    statCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-8px)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
         });
     });
 });

@@ -1389,11 +1389,32 @@ def dashboard():
             join_date = "N/A"
             last_login = "N/A"
         
-        # Mock data for stats (replace with real database queries in production)
-        scan_count = 23  # Total scans performed by user
-        threat_count = 5  # Threats detected
-        safe_count = 18  # Safe scans
-        remaining_scans = 50 - scan_count  # Daily limit
+        # Get user's ID for scan history queries
+        user_id = session.get('user_id')
+        
+        # Get actual scan statistics from the database
+        try:
+            # Get total scan count
+            cursor.execute("SELECT COUNT(*) FROM scan_history WHERE user_id = ?", (user_id,))
+            scan_count = cursor.fetchone()[0] or 0
+            
+            # Get threat count
+            cursor.execute("SELECT COUNT(*) FROM scan_history WHERE user_id = ? AND result LIKE '%suspicious%' OR result LIKE '%danger%' OR result LIKE '%scam%'", (user_id,))
+            threat_count = cursor.fetchone()[0] or 0
+            
+            # Get safe count
+            cursor.execute("SELECT COUNT(*) FROM scan_history WHERE user_id = ? AND result LIKE '%safe%'", (user_id,))
+            safe_count = cursor.fetchone()[0] or 0
+            
+            # Daily scan limit
+            daily_limit = 50  # Could make this dynamic based on account type
+            remaining_scans = daily_limit - scan_count if scan_count < daily_limit else 0
+        except sqlite3.Error as e:
+            print(f"Error fetching scan statistics: {e}")
+            scan_count = 0
+            threat_count = 0
+            safe_count = 0
+            remaining_scans = 50
         
         # Format last_login time in a user-friendly way if it's available
         if last_login != "N/A":
@@ -1415,33 +1436,69 @@ def dashboard():
         # Get current date in a nice format
         current_date = time.strftime("%B %d, %Y")
         
-        # Mock recent activities (replace with real data from scan history)
-        recent_activities = [
-            {
-                "date": "Today, 08:45 AM",
-                "type": "image",
-                "item": "screenshot.jpg",
-                "result": "safe"
-            },
-            {
-                "date": "Yesterday, 02:30 PM",
-                "type": "link",
-                "item": "https://example.com/login",
-                "result": "suspicious"
-            },
-            {
-                "date": "Jun 14, 11:20 AM",
-                "type": "file",
-                "item": "invoice.pdf",
-                "result": "dangerous"
-            },
-            {
-                "date": "Jun 13, 04:15 PM",
-                "type": "link",
-                "item": "https://safedomain.com",
-                "result": "safe"
-            }
-        ]
+        # Get actual scan history from database
+        recent_activities = []
+        try:
+            cursor.execute("""
+                SELECT scan_date, scan_type, scan_item, result 
+                FROM scan_history 
+                WHERE user_id = ? 
+                ORDER BY scan_date DESC LIMIT 10
+            """, (user_id,))
+            
+            history_items = cursor.fetchall()
+            
+            # Process each history item
+            for item in history_items:
+                scan_date, scan_type, scan_item, result = item
+                
+                # Format date nicely
+                try:
+                    item_date = time.strptime(scan_date, "%Y-%m-%d %H:%M:%S")
+                    today = time.strftime("%Y-%m-%d")
+                    yesterday = time.strftime("%Y-%m-%d", time.localtime(time.time() - 86400))
+                    
+                    if time.strftime("%Y-%m-%d", item_date) == today:
+                        formatted_date = "Today, " + time.strftime("%I:%M %p", item_date)
+                    elif time.strftime("%Y-%m-%d", item_date) == yesterday:
+                        formatted_date = "Yesterday, " + time.strftime("%I:%M %p", item_date)
+                    else:
+                        formatted_date = time.strftime("%b %d, %I:%M %p", item_date)
+                except:
+                    formatted_date = scan_date
+                
+                # Determine result category (safe, suspicious, dangerous)
+                result_category = "safe"
+                if "suspicious" in result.lower() or "warning" in result.lower():
+                    result_category = "suspicious"
+                elif "danger" in result.lower() or "scam" in result.lower() or "threat" in result.lower():
+                    result_category = "dangerous"
+                
+                # Add to activities list
+                recent_activities.append({
+                    "date": formatted_date,
+                    "type": scan_type,
+                    "item": scan_item,
+                    "result": result_category
+                })
+            
+            # If no history found, provide a helpful message
+            if not recent_activities:
+                recent_activities = [{
+                    "date": "No scans yet",
+                    "type": "none",
+                    "item": "Try scanning an image, link, or file",
+                    "result": "none"
+                }]
+        except sqlite3.Error as e:
+            print(f"Error fetching scan history: {e}")
+            # Fallback empty message if database query fails
+            recent_activities = [{
+                "date": "No scan history available",
+                "type": "none", 
+                "item": "Database error occurred",
+                "result": "none"
+            }]
     
     return render_template('dashboard.html', 
                           username=username,
