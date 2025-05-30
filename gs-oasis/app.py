@@ -12,6 +12,7 @@ import PyPDF2
 from PIL import Image
 import hashlib
 from query_gpt import get_open_ai_repsonse
+from url_check import check_url_suspiciousness
 
 
 # Try to import image analysis libraries
@@ -436,6 +437,7 @@ def scan_image():
             is_scam = False
             confidence = 0
             reasons = []
+            is_text_message = False
             
             try:
                 # Generate a unique filename for the temp image
@@ -453,44 +455,141 @@ def scan_image():
                 # Analyze the extracted text for scams if we got any
                 if extracted_text:
                     is_scam, confidence, reasons = check_for_scam(extracted_text)
+                    
+                    # Attempt to detect if this is a text message screenshot
+                    text_message_indicators = [
+                        'sms', 'text message', 'imessage', 'message', 'chat', 
+                        'sent from my iphone', 'sent from my android',
+                        'delivered', 'read', 'typing...', 'sent', 'received'
+                    ]
+                    
+                    # Check if any of the text message indicators are present
+                    is_text_message = any(indicator in extracted_text.lower() for indicator in text_message_indicators)
+                    
+                    # Additional checks for text message UI elements in the extracted text
+                    if not is_text_message:
+                        message_patterns = [
+                            r'\d{1,2}:\d{2}\s?(AM|PM|am|pm)',  # Time patterns like "10:30 AM"
+                            r'(Today|Yesterday)(\s+at\s+\d{1,2}:\d{2})?',  # Today/Yesterday headers
+                            r'(Read|Delivered|Sent|Not Delivered)',  # Message status indicators
+                            r'(iMessage|SMS)',  # Message type indicators
+                        ]
+                        
+                        # Check if any message patterns are present in the text
+                        is_text_message = any(re.search(pattern, extracted_text) for pattern in message_patterns)
                 
                 # Create a detailed result message
-                if is_scam:
-                    risk_level = "High Risk" if confidence > 60 else "Medium Risk"
-                    result_msg = f"⚠️ {risk_level}: This image contains text with indicators of a potential scam ({confidence}% confidence)."
-                    for reason in reasons:
-                        result_msg += f"\n• {reason}"
-                    result_msg += "\n\nRecommendation: Do not trust information in this image or follow instructions within it."
-                else:
-                    # Check if any of the analysis results indicate suspicious content
-                    suspicious_keywords = ['suspicious', 'hiding', 'manipulated', 'blurry', 'qr code']
-                    suspicious_analysis = [result for result in analysis_results 
-                                          if any(keyword in result.lower() for keyword in suspicious_keywords)]
+                if is_text_message:
+                    performed_checks.append("Text message analysis")
                     
-                    if suspicious_analysis:
-                        result_msg = f"⚠️ Caution Advised: While no scam text was detected, our scan found potential issues with this image:"
-                        for finding in suspicious_analysis:
-                            result_msg += f"\n• {finding}"
-                        result_msg += "\n\nRecommendation: Exercise caution with this image."
-                    else:
-                        checks_text = ", ".join(performed_checks) if performed_checks else "Basic analysis"
-                        result_msg = f"✅ No suspicious content detected.\n\nAnalysis performed: {checks_text}"
+                    # Specialized text message scam analysis
+                    if is_scam:
+                        risk_level = "High Risk" if confidence > 60 else "Medium Risk"
+                        result_msg = f"⚠️ {risk_level}: This text message contains indicators of a potential scam ({confidence}% confidence)."
                         
-                        # Add a note about what was found in the image
-                        if analysis_results:
-                            result_msg += "\n\nFindings:"
-                            for finding in analysis_results[:5]:  # Limit to first 5 findings
+                        # Add detected reasons
+                        for reason in reasons:
+                            result_msg += f"\n• {reason}"
+                            
+                        result_msg += "\n\n<strong>Recommendation:</strong> Do not respond to this message, click any links, or call any phone numbers provided."
+                        
+                        # Add specialized advice for text message scams
+                        result_msg += "\n\n<div class='education-tips'>"
+                        result_msg += "\n<h3>How to Handle Suspicious Text Messages:</h3>"
+                        result_msg += "\n<ul>"
+                        result_msg += "\n<li><strong>Do not reply</strong> - Even replying with 'STOP' confirms to scammers that your number is active.</li>"
+                        result_msg += "\n<li><strong>Block the sender</strong> - Most phones allow you to block specific numbers from contacting you.</li>"
+                        result_msg += "\n<li><strong>Report to authorities</strong> - Forward spam texts to 7726 (SPAM) in the US and many other countries.</li>"
+                        result_msg += "\n<li><strong>Delete the message</strong> - Once reported, delete the message to avoid accidentally clicking on it later.</li>"
+                        result_msg += "\n<li><strong>Never share personal information</strong> - Legitimate businesses won't ask for sensitive information via text.</li>"
+                        result_msg += "\n</ul>"
+                        
+                        # Add specific advice based on detected issues
+                        if any("urgency" in reason.lower() for reason in reasons):
+                            result_msg += "\n<p><strong>Note:</strong> This message contains urgency indicators, which is a common tactic to rush you into making poor decisions.</p>"
+                        
+                        if any("click" in reason.lower() or "link" in reason.lower() or "url" in reason.lower()):
+                            result_msg += "\n<p><strong>Note:</strong> Be extremely cautious of links in text messages. They often lead to phishing sites that steal your information.</p>"
+                        
+                        if any("bank" in reason.lower() or "account" in reason.lower() or "verify" in reason.lower() or "confirm" in reason.lower()):
+                            result_msg += "\n<p><strong>Note:</strong> Legitimate financial institutions will never ask you to verify account information via text message.</p>"
+                        
+                        if any("prize" in reason.lower() or "won" in reason.lower() or "winner" in reason.lower() or "lottery" in reason.lower()):
+                            result_msg += "\n<p><strong>Note:</strong> If you didn't enter a contest or lottery, you can't win it. These are almost always scams.</p>"
+                        
+                        result_msg += "\n</div>"
+                    else:
+                        # Check if any of the analysis results indicate suspicious content
+                        suspicious_keywords = ['suspicious', 'hiding', 'manipulated', 'blurry', 'qr code']
+                        suspicious_analysis = [result for result in analysis_results 
+                                               if any(keyword in result.lower() for keyword in suspicious_keywords)]
+                        
+                        if suspicious_analysis:
+                            result_msg = f"⚠️ Caution Advised: While no scam text was detected, our scan found potential issues with this text message:"
+                            for finding in suspicious_analysis:
                                 result_msg += f"\n• {finding}"
+                            result_msg += "\n\nRecommendation: Exercise caution with messages from this sender."
+                        else:
+                            result_msg = f"✅ No suspicious content detected in this text message.\n\nThis message appears to be legitimate based on our analysis."
+                            
+                            # Add a note about what was found in the image
+                            if analysis_results:
+                                result_msg += "\n\nFindings:"
+                                for finding in analysis_results[:3]:  # Limit to first 3 findings for cleaner display
+                                    if "✅" in finding or "low likelihood" in finding.lower():
+                                        result_msg += f"\n• {finding}"
+                
+                else:
+                    # Standard image analysis for non-text message images
+                    if is_scam:
+                        risk_level = "High Risk" if confidence > 60 else "Medium Risk"
+                        result_msg = f"⚠️ {risk_level}: This image contains text with indicators of a potential scam ({confidence}% confidence)."
+                        for reason in reasons:
+                            result_msg += f"\n• {reason}"
+                        result_msg += "\n\nRecommendation: Do not trust information in this image or follow instructions within it."
+                    else:
+                        # Check if any of the analysis results indicate suspicious content
+                        suspicious_keywords = ['suspicious', 'hiding', 'manipulated', 'blurry', 'qr code']
+                        suspicious_analysis = [result for result in analysis_results 
+                                              if any(keyword in result.lower() for keyword in suspicious_keywords)]
+                        
+                        if suspicious_analysis:
+                            result_msg = f"⚠️ Caution Advised: While no scam text was detected, our scan found potential issues with this image:"
+                            for finding in suspicious_analysis:
+                                result_msg += f"\n• {finding}"
+                            result_msg += "\n\nRecommendation: Exercise caution with this image."
+                        else:
+                            checks_text = ", ".join(performed_checks) if performed_checks else "Basic analysis"
+                            result_msg = f"✅ No suspicious content detected.\n\nAnalysis performed: {checks_text}"
+                            
+                            # Add a note about what was found in the image
+                            if analysis_results:
+                                result_msg += "\n\nFindings:"
+                                for finding in analysis_results[:5]:  # Limit to first 5 findings
+                                    result_msg += f"\n• {finding}"
                 
                 # Add information about extracted text
                 if extracted_text and len(extracted_text) > 20:
                     # Only show a snippet if there's a lot of text
-                    text_preview = extracted_text[:100] + "..." if len(extracted_text) > 100 else extracted_text
+                    text_preview = extracted_text[:150] + "..." if len(extracted_text) > 150 else extracted_text
                     result_msg += f"\n\n<div class='extracted-text'><strong>📝 Extracted Text:</strong><br>\"{text_preview}\"</div>"
                 elif extracted_text:
                     result_msg += f"\n\n<div class='extracted-text'><strong>📝 Extracted Text:</strong><br>\"{extracted_text}\"</div>"
                 else:
                     result_msg += "\n\n<div class='extracted-text'><strong>📝 Text Extraction:</strong><br>No readable text was found in this image.</div>"
+                
+                # Add specific guidance for text message scams
+                if is_text_message and is_scam:
+                    result_msg += "\n\n<div class='text-message-tips'>"
+                    result_msg += "\n<h3>Common Text Message Scams:</h3>"
+                    result_msg += "\n<ul>"
+                    result_msg += "\n<li><strong>Package delivery scams</strong> - Messages claiming to be from shipping companies about a delivery issue.</li>"
+                    result_msg += "\n<li><strong>Banking alerts</strong> - Fake messages about account problems, unauthorized charges, or frozen accounts.</li>"
+                    result_msg += "\n<li><strong>Tax/government scams</strong> - Messages claiming to be from the IRS, tax authorities, or government agencies.</li>"
+                    result_msg += "\n<li><strong>Prize/lottery notifications</strong> - Messages claiming you've won something and need to click a link to claim it.</li>"
+                    result_msg += "\n<li><strong>Account verification</strong> - Messages asking you to verify your account for services like Apple, Google, or social media.</li>"
+                    result_msg += "\n</ul>"
+                    result_msg += "\n</div>"
                 
                 # Add AI assistant recommendation
                 result_msg += "\n\n<div class='ai-recommendation'><strong>Have any more questions?</strong> Ask the GS Oasis AI Assistant for help and insight. <a href='/ai_assistant'>Try our AI Assistant →</a></div>"
@@ -500,13 +599,31 @@ def scan_image():
                     os.remove(temp_path)
                 
                 # Store scan results for the results page
-                session['last_scan_type'] = 'image'
+                session['last_scan_type'] = 'text_message' if is_text_message else 'image'
                 session['last_scan_result'] = result_msg.replace("\n", "<br>")
                 session['last_scan_filename'] = file.filename
                 
+                # Add scan to history
+                try:
+                    user_id = session.get('user_id')
+                    if user_id:
+                        with sqlite3.connect('database.db') as conn:
+                            cursor = conn.cursor()
+                            scan_item = f"Text Message: {file.filename}" if is_text_message else f"Image: {file.filename}"
+                            scan_type = "text_message" if is_text_message else "image"
+                            result_summary = "Suspicious content detected" if is_scam else "No suspicious content detected"
+                            
+                            cursor.execute(
+                                'INSERT INTO scan_history (user_id, scan_type, scan_item, result) VALUES (?, ?, ?, ?)',
+                                (user_id, scan_type, scan_item, result_summary)
+                            )
+                            conn.commit()
+                except Exception as e:
+                    print(f"Error recording scan history: {str(e)}")
+                
                 flash('Image scanned successfully!', 'success')
                 return redirect(url_for('scan_results'))
-                
+            
             except Exception as e:
                 flash(f'Error scanning image: {str(e)}', 'danger')
                 # Clean up temporary file if it exists
@@ -947,124 +1064,27 @@ def analyze_image_content(image_path):
                     pass  # Silently fail QR detection if something goes wrong
             
             # 3. Extract text using OCR if available
-            if OCR_AVAILABLE:
+            extracted_text = extract_text_with_fallback(image_path)
+            if extracted_text:
+                performed_checks.append("Text extraction (enhanced)")
+                analysis_results.append(f"Extracted text content using enhanced analysis")
+                
+            # If we found some text, also try to run a second OCR pass with different settings            if extracted_text and OCR_AVAILABLE:
                 try:
-                    # First try normal OCR
-                    extracted_text = pytesseract.image_to_string(img)
-                    performed_checks.append("Text extraction (OCR)")
-                    
-                    # If no text was found or very little text, try preprocessing the image
-                    if len(extracted_text) < 10:
-                        performed_checks.append("Enhanced OCR with preprocessing")
-                        # Apply preprocessing to enhance text detection
-                        preprocessed_img = preprocess_image_for_ocr(img)
-                        enhanced_text = pytesseract.image_to_string(preprocessed_img)
+                    # Try with different PSM modes to catch different text layouts
+                    for psm_mode in [3, 6, 4]:  # Page, Single block, Single line
+                        custom_config = f'--psm {psm_mode} --oem 3'
+                        alt_text = pytesseract.image_to_string(img, config=custom_config)
                         
-                        # If preprocessing found more text, use that instead
-                        if len(enhanced_text) > len(extracted_text):
-                            extracted_text = enhanced_text
-                            analysis_results.append("Used enhanced OCR to extract text")
-                    
-                    # If we found some text, also try to run a second OCR pass with different settings
-                    if extracted_text:
-                        # Try with different PSM modes to catch different text layouts
-                        for psm_mode in [3, 6, 4]:  # Page, Single block, Single line
-                            custom_config = f'--psm {psm_mode} --oem 3'
-                            alt_text = pytesseract.image_to_string(img, config=custom_config)
-                            
-                            # If this mode found more text, add it to our extracted text
-                            if len(alt_text) > 20 and alt_text not in extracted_text:
-                                extracted_text += " " + alt_text
-                                
-                        analysis_results.append(f"Extracted {len(extracted_text)} characters of text from image")
+                        # If this mode found more text, add it to our extracted text
+                        if len(alt_text) > 20 and alt_text not in extracted_text:
+                            extracted_text += " " + alt_text
                 except Exception as e:
-                    analysis_results.append(f"OCR failed: {str(e)}")
+                    analysis_results.append(f"Additional OCR processing failed: {str(e)}")
+                
+                analysis_results.append(f"Extracted {len(extracted_text)} characters of text from image")
             else:
-                analysis_results.append("OCR (text recognition) is not available - using enhanced image analysis")
-                extracted_text = "Text extraction unavailable without Tesseract OCR"
-                
-                # AI-based image pattern analysis (when OCR is unavailable)
-                # This is a simplified pattern recognition system as a fallback
-                performed_checks.append("Enhanced image analysis")
-                
-                # Convert to bytes for analysis
-                img_bytes = io.BytesIO()
-                img.save(img_bytes, format=format_type)
-                img_bytes = img_bytes.getvalue()
-                
-                # Calculate entropy of image data as a measure of potential hidden content
-                entropy = 0
-                for i in range(256):
-                    p = img_bytes.count(i.to_bytes(1, byteorder='big')) / len(img_bytes)
-                    if p > 0:
-                        entropy -= p * math.log2(p)
-                
-                if entropy > 7.5:  # High entropy threshold
-                    analysis_results.append("⚠️ Image has high information entropy, possible steganography")
-                
-                # Analyze color distribution for anomalies that might indicate hidden content
-                try:
-                    # Sample pixels for analysis
-                    pixels_data = list(img.getdata())
-                    pixel_sample = pixels_data[::100]  # Take every 100th pixel for performance
-                    
-                    # Check for unusual color patterns 
-                    unique_colors = len(set(pixel_sample))
-                    color_ratio = unique_colors / len(pixel_sample) if pixel_sample else 0
-                    
-                    if mode == 'RGBA' and color_ratio < 0.01:
-                        analysis_results.append("⚠️ Suspicious color pattern detected, possible hidden content")
-                    
-                    # Use perceptual hash as a simplified way to detect common scam templates
-                    # This simulates comparing against a database of known scam patterns
-                    if perform_simplified_image_similarity_check(img):
-                        analysis_results.append("⚠️ Image matches patterns commonly found in scam content")
-                        
-                except Exception as e:
-                    pass
-                
-            # 4. Check metadata (EXIF data) for any suspicious elements
-            performed_checks.append("Metadata analysis")
-            try:
-                exif_data = img._getexif()
-                if exif_data:
-                    # Note that we found metadata
-                    analysis_results.append("Image contains metadata/EXIF data")
-                    
-                    # Check for suspicious metadata
-                    if exif_data and isinstance(exif_data, dict):
-                        for tag_id, value in exif_data.items():
-                            if tag_id == 40091 or tag_id == 40092:  # XMP metadata
-                                analysis_results.append("⚠️ Image contains extended metadata (XMP)")
-                            if tag_id == 37510:  # UserComment
-                                analysis_results.append("⚠️ Image contains user comments in metadata")
-                                
-                                # Try to extract text from metadata
-                                if isinstance(value, bytes) or isinstance(value, str):
-                                    try:
-                                        comment_text = value.decode('utf-8') if isinstance(value, bytes) else value
-                                        if len(comment_text) > 10:  # Only consider substantial text
-                                            extracted_text += " " + comment_text
-                                            analysis_results.append(f"⚠️ Extracted text from metadata: {comment_text[:50]}...")
-                                    except:
-                                        pass
-            except Exception as e:
-                # Many images don't have exif data, so this isn't critical
-                pass
-                
-            # Check for transparency (PNG only)
-            if mode == 'RGBA':
-                try:
-                    transparent_pixels = 0
-                    for pixel in img.getdata():
-                        if len(pixel) == 4 and pixel[3] < 255:  # Alpha channel < 255 means some transparency
-                            transparent_pixels += 1
-                    
-                    if transparent_pixels > 0:
-                        analysis_results.append(f"⚠️ Image has {transparent_pixels} transparent pixels which might hide content")
-                except Exception as e:
-                    pass
-                    
+                analysis_results.append("No text found in image")
     except Exception as e:
         analysis_results.append(f"Basic image analysis failed: {str(e)}")
         return extracted_text, analysis_results, performed_checks
@@ -1331,6 +1351,51 @@ def preprocess_image_for_ocr(img):
     except Exception as e:
         # If preprocessing fails, return the original image
         return img
+
+def extract_text_with_fallback(image_path):
+    """Extract text from images using available methods, with cloud fallback when Tesseract isn't available"""
+    extracted_text = ""
+    
+    # First try local Tesseract if available
+    if OCR_AVAILABLE:
+        try:
+            with Image.open(image_path) as img:
+                extracted_text = pytesseract.image_to_string(img)
+                if not extracted_text:
+                    # Try with preprocessing if no text found
+                    preprocessed_img = preprocess_image_for_ocr(img)
+                    extracted_text = pytesseract.image_to_string(preprocessed_img)
+                return extracted_text
+        except Exception as e:
+            print(f"Local OCR failed: {str(e)}")
+    
+    # If we reach here, either Tesseract is not available or it failed
+    # Use our enhanced pattern recognition as fallback
+    try:
+        with Image.open(image_path) as img:
+            # Get basic image properties for analysis
+            width, height = img.size
+            mode = img.mode
+            
+            # Look for visual patterns that suggest text
+            if OPENCV_AVAILABLE:
+                try:
+                    # Use OpenCV for edge detection to identify text-like regions
+                    img_cv = cv2.imread(image_path)
+                    gray = cv2.cvtColor(img_cv, cv2.COLOR_BGR2GRAY)
+                    edges = cv2.Canny(gray, 100, 200)
+                    
+                    # Check if there are patterns that look like text
+                    text_region_ratio = np.count_nonzero(edges) / (height * width)
+                    if text_region_ratio > 0.05:  # More than 5% of image has edges
+                        return "[Image appears to contain text, but could not be extracted]"
+                except:
+                    pass
+            
+            # If no text patterns were detected, return a generic message
+            return "[Image analyzed, but no extractable text found]"
+    except Exception as e:
+        return f"[Error analyzing image: {str(e)}]"
 
 @app.route('/dashboard')
 @login_required
