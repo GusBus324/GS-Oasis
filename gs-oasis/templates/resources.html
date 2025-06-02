@@ -44,6 +44,9 @@
         text-align: center;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
         transition: transform 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
     }
     
     .stat-card:hover {
@@ -68,6 +71,7 @@
     .stat-description {
         font-size: 0.95rem;
         color: var(--dark-color);
+        flex: 1;
     }
     
     .resources-section {
@@ -102,6 +106,9 @@
         box-shadow: var(--box-shadow);
         overflow: hidden;
         transition: transform 0.3s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
     }
     
     .resource-card:hover {
@@ -116,15 +123,56 @@
     
     .resource-card-body {
         padding: 20px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .resource-card-body p {
+        margin-bottom: 15px;
     }
     
     .resource-card-body ul {
         padding-left: 20px;
-        margin-top: 15px;
+        margin-top: 0;
+        flex: 1;
     }
     
     .resource-card-body ul li {
         margin-bottom: 10px;
+    }
+    
+    .cta-section {
+        text-align: center;
+        margin-top: 60px;
+        padding: 40px;
+        background-color: white;
+        border-radius: 16px;
+        box-shadow: var(--box-shadow);
+    }
+    
+    .cta-section h2 {
+        margin-bottom: 20px;
+        color: var(--primary-color);
+    }
+    
+    .cta-section p {
+        margin-bottom: 30px;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .cta-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 25px;
+    }
+    
+    .cta-buttons a {
+        min-width: 180px;
     }
     
     @media (max-width: 768px) {
@@ -135,6 +183,16 @@
         .stats-grid, .resource-grid {
             grid-template-columns: 1fr;
         }
+        
+        .cta-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .cta-buttons a {
+            width: 100%;
+            max-width: 300px;
+        }
     }
 </style>
 {% endblock %}
@@ -144,7 +202,7 @@
     <div class="hero-content">
         <img src="{{ url_for('static', filename='images/Logo.png') }}" alt="GS Oasis Logo" class="jumbo-logo">
         <h1>Resources & <span class="highlight">Scam Prevention</span></h1>
-        <p class="tagline">Identify, counter, knowledge and improvement</p>
+        <p class="tagline">Identify, Counter, Learn, and Improve</p>
         <p class="subtitle">Tools and resources to help you identify threats, counter scams, and improve your online safety</p>
     </div>
 </section>
@@ -152,7 +210,7 @@
 <div class="resources-section">
     <div class="mission-statement">
         <h2>Our <span class="highlight">Mission</span></h2>
-        <p>At GS Oasis, we understand that not everyone has the technical knowledge to identify sophisticated scams. Our platform is specifically designed for people who find it challenging to recognize digital threats, providing intuitive tools that anyone can use to stay safe online with our core values: identify, counter, knowledge and improvement.</p>
+        <p>At GS Oasis, we understand that not everyone has the technical knowledge to identify sophisticated scams. Our platform is specifically designed for people who find it challenging to recognize digital threats, providing intuitive tools that anyone can use to stay safe online. Our core values are: Identify threats, Counter scams, Share knowledge, and Improve online safety.</p>
     </div>
     
     <h2>The <span class="highlight">Scale of Online Scams</span></h2>
@@ -234,7 +292,7 @@
         </div>
     </div>
     
-    <div class="cta-section" style="margin-top: 60px;">
+    <div class="cta-section">
         <h2>Don't Face Online Threats Alone</h2>
         <p>GS Oasis provides the tools and knowledge you need to stay safe online, even if you're not tech-savvy. Our intuitive interface and clear results make security accessible to everyone.</p>
         {% if 'user_id' in session %}

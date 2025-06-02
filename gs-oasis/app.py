@@ -1589,4 +1589,4 @@ if __name__ == '__main__':
     # Update the database schema on startup
     update_db_schema()
     
-    app.run(debug=True, port=5002)  # Changed port from 5001 to 5002 to resolve port conflict
+    app.run(debug=True, port=5005)  # Changed port from 5002 to 5005 to resolve port conflict
