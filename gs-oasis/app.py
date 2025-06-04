@@ -8,25 +8,47 @@ import time
 import numpy as np
 from functools import wraps
 from datetime import timedelta
-import PyPDF2
-from PIL import Image
+import math
 import hashlib
-from query_gpt import get_open_ai_repsonse
-from url_check import check_url_suspiciousness
+from PIL import Image
+import warnings
 
+# Try to import potentially missing libraries with fallbacks
+try:
+    import PyPDF2
+    PDF_AVAILABLE = True
+except ImportError:
+    PDF_AVAILABLE = False
+    warnings.warn("PyPDF2 not available. PDF analysis will be limited.")
 
-# Try to import image analysis libraries
+try:
+    from query_gpt import get_open_ai_repsonse
+    AI_AVAILABLE = True
+except ImportError:
+    AI_AVAILABLE = False
+    warnings.warn("OpenAI module not available. AI assistant will be disabled.")
+
+try:
+    from url_check import check_url_suspiciousness
+    URL_CHECK_AVAILABLE = True
+except ImportError:
+    URL_CHECK_AVAILABLE = False
+    warnings.warn("URL check module not available. URL scanning will use basic checks only.")
+
+# Try to import image analysis libraries with fallbacks
 try:
     import pytesseract
     OCR_AVAILABLE = True
 except ImportError:
     OCR_AVAILABLE = False
+    warnings.warn("Tesseract OCR not available. Text extraction from images will be limited.")
 
 try:
     import cv2
     OPENCV_AVAILABLE = True
 except ImportError:
     OPENCV_AVAILABLE = False
+    warnings.warn("OpenCV not available. Image analysis will use fallback methods.")
 
 app = Flask(__name__)
 app.secret_key = "gs-oasis-secret-key"  # Required for flash messages
@@ -122,77 +144,87 @@ def update_db_schema():
     Run this function when schema changes are made to ensure backward compatibility.
     """
     print("Checking and updating database schema...")
-    with sqlite3.connect('database.db') as conn:
-        cursor = conn.cursor()
-        
-        # Check if columns exist in users table and add them if missing
-        cursor.execute("PRAGMA table_info(users)")
-        existing_columns = [col[1] for col in cursor.fetchall()]
-        
-        # Add created_at column if it doesn't exist
-        if 'created_at' not in existing_columns:
-            try:
-                # Add column without default
-                cursor.execute("ALTER TABLE users ADD COLUMN created_at TEXT")
-                # Then update it with current timestamp
-                cursor.execute("UPDATE users SET created_at = datetime('now') WHERE created_at IS NULL")
-                print("Added created_at column")
-            except sqlite3.OperationalError as e:
-                print(f"Note: {e}")
-        
-        # Add last_login column if it doesn't exist
-        if 'last_login' not in existing_columns:
-            try:
-                cursor.execute("ALTER TABLE users ADD COLUMN last_login TEXT")
-                print("Added last_login column")
-            except sqlite3.OperationalError as e:
-                print(f"Note: {e}")
-        
-        # Add account_type column if it doesn't exist
-        if 'account_type' not in existing_columns:
-            try:
-                # Add column without default first
-                cursor.execute("ALTER TABLE users ADD COLUMN account_type TEXT")
-                # Then set the default value
-                cursor.execute("UPDATE users SET account_type = 'standard' WHERE account_type IS NULL")
-                print("Added account_type column")
-            except sqlite3.OperationalError as e:
-                print(f"Note: {e}")
-        
-        # Check if scan_history table exists
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='scan_history'")
-        if not cursor.fetchone():
-            print("Creating scan_history table")
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS scan_history (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    user_id INTEGER,
-                    scan_date TEXT DEFAULT CURRENT_TIMESTAMP,
-                    scan_type TEXT NOT NULL,
-                    scan_item TEXT NOT NULL,
-                    result TEXT NOT NULL,
-                    FOREIGN KEY (user_id) REFERENCES users(id)
-                )
-            ''')
+    try:
+        with sqlite3.connect('database.db') as conn:
+            cursor = conn.cursor()
             
-        # Check if contact_messages table exists
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='contact_messages'")
-        if not cursor.fetchone():
-            print("Creating contact_messages table")
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS contact_messages (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    name TEXT NOT NULL,
-                    email TEXT NOT NULL,
-                    subject TEXT NOT NULL,
-                    message TEXT NOT NULL,
-                    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-                    is_read BOOLEAN DEFAULT 0
-                )
-            ''')
-        
-        conn.commit()
-        print("Database schema update completed.")
+            # Check if columns exist in users table and add them if missing
+            cursor.execute("PRAGMA table_info(users)")
+            existing_columns = [col[1] for col in cursor.fetchall()]
+            
+            # Add created_at column if it doesn't exist
+            if 'created_at' not in existing_columns:
+                try:
+                    # Add column without default
+                    cursor.execute("ALTER TABLE users ADD COLUMN created_at TEXT")
+                    # Then update it with current timestamp
+                    cursor.execute("UPDATE users SET created_at = datetime('now') WHERE created_at IS NULL")
+                    print("Added created_at column")
+                except sqlite3.OperationalError as e:
+                    print(f"Note: {e}")
+            
+            # Add last_login column if it doesn't exist
+            if 'last_login' not in existing_columns:
+                try:
+                    cursor.execute("ALTER TABLE users ADD COLUMN last_login TEXT")
+                    print("Added last_login column")
+                except sqlite3.OperationalError as e:
+                    print(f"Note: {e}")
+            
+            # Add account_type column if it doesn't exist
+            if 'account_type' not in existing_columns:
+                try:
+                    # Add column without default first
+                    cursor.execute("ALTER TABLE users ADD COLUMN account_type TEXT")
+                    # Then set the default value
+                    cursor.execute("UPDATE users SET account_type = 'standard' WHERE account_type IS NULL")
+                    print("Added account_type column")
+                except sqlite3.OperationalError as e:
+                    print(f"Note: {e}")
+            
+            # Check if scan_history table exists
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='scan_history'")
+            if not cursor.fetchone():
+                print("Creating scan_history table")
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS scan_history (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        user_id INTEGER,
+                        scan_date TEXT DEFAULT CURRENT_TIMESTAMP,
+                        scan_type TEXT NOT NULL,
+                        scan_item TEXT NOT NULL,
+                        result TEXT NOT NULL,
+                        FOREIGN KEY (user_id) REFERENCES users(id)
+                    )
+                ''')
+                
+            # Check if contact_messages table exists
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='contact_messages'")
+            if not cursor.fetchone():
+                print("Creating contact_messages table")
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS contact_messages (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        name TEXT NOT NULL,
+                        email TEXT NOT NULL,
+                        subject TEXT NOT NULL,
+                        message TEXT NOT NULL,
+                        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                        is_read BOOLEAN DEFAULT 0
+                    )
+                ''')
+            
+            # Create an index on the user_id column in scan_history for faster queries
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_scan_history_user_id ON scan_history(user_id)")
+            
+            # Create an index on the username column in users for faster logins
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_users_username ON users(username)")
+            
+            conn.commit()
+            print("Database schema update completed.")
+    except sqlite3.Error as e:
+        print(f"Error updating database schema: {e}")
+        # If the database doesn't exist yet, we'll create it during init_db()
 
 init_db()
 update_db_schema()  # Update the database schema to add any missing columns
@@ -813,8 +845,146 @@ def ai_assistant():
     response = None
     if request.method == 'POST':
         user_question = request.form.get('question')
-        response = get_open_ai_repsonse(user_question)
+        
+        if AI_AVAILABLE:
+            try:
+                # Try to get response from OpenAI
+                response = get_open_ai_repsonse(user_question)
+                
+                # If response is empty or None, fall back to rule-based system
+                if not response:
+                    response = generate_fallback_response(user_question)
+            except Exception as e:
+                print(f"Error with OpenAI API: {str(e)}")
+                response = generate_fallback_response(user_question)
+        else:
+            # OpenAI integration not available, use fallback
+            response = generate_fallback_response(user_question)
+            
     return render_template('ai_assistant.html', response=response)
+
+def generate_fallback_response(question):
+    """
+    Generate a fallback response when OpenAI API is not available
+    Uses rule-based matching to provide helpful information
+    """
+    question = question.lower()
+    
+    # Common scam-related keywords
+    scam_keywords = ['scam', 'phishing', 'fake', 'fraud', 'suspicious', 'spam']
+    email_keywords = ['email', 'message', 'inbox']
+    link_keywords = ['link', 'url', 'website', 'click']
+    phone_keywords = ['call', 'phone', 'text', 'sms', 'message']
+    bank_keywords = ['bank', 'account', 'credit card', 'debit card', 'financial']
+    personal_info_keywords = ['password', 'ssn', 'social security', 'identity', 'personal information']
+    
+    # Check for question categories
+    if any(keyword in question for keyword in scam_keywords):
+        if any(keyword in question for keyword in email_keywords):
+            return """
+                <h3>Email Scam Protection Tips</h3>
+                <p>Here are some ways to identify and protect yourself from email scams:</p>
+                <ul>
+                    <li><strong>Check the sender:</strong> Verify the email address is legitimate and not a slight misspelling of a real company.</li>
+                    <li><strong>Be wary of urgency:</strong> Scammers often create false urgency to pressure you into acting quickly without thinking.</li>
+                    <li><strong>Don't click suspicious links:</strong> Hover over links to see where they actually lead before clicking.</li>
+                    <li><strong>Grammar and spelling:</strong> Professional companies rarely send emails with poor grammar or spelling mistakes.</li>
+                    <li><strong>Suspicious attachments:</strong> Never open attachments from unknown senders.</li>
+                    <li><strong>Requests for personal information:</strong> Legitimate organizations rarely ask for sensitive information via email.</li>
+                </ul>
+                <p>If you suspect an email is a scam, delete it and don't interact with it in any way.</p>
+            """
+        elif any(keyword in question for keyword in link_keywords):
+            return """
+                <h3>How to Identify Suspicious Links</h3>
+                <p>Here are ways to check if a link is safe before clicking:</p>
+                <ul>
+                    <li><strong>Check the URL:</strong> Look for misspellings or slight variations of legitimate domain names.</li>
+                    <li><strong>Look for HTTPS:</strong> Secure websites use HTTPS and show a padlock icon in your browser.</li>
+                    <li><strong>Be cautious of shortened URLs:</strong> They can hide the actual destination.</li>
+                    <li><strong>Check for excessive subdomains:</strong> Multiple dots in a URL can be suspicious.</li>
+                    <li><strong>Use our scan link feature:</strong> Paste any suspicious link into our scanner to check it.</li>
+                </ul>
+                <p>When in doubt, don't click. Type the company's official URL directly into your browser instead.</p>
+            """
+        elif any(keyword in question for keyword in phone_keywords):
+            return """
+                <h3>Phone and Text Message Scam Protection</h3>
+                <p>Protect yourself from phone and SMS scams with these tips:</p>
+                <ul>
+                    <li><strong>Unknown numbers:</strong> Be cautious of calls or texts from unknown numbers.</li>
+                    <li><strong>Don't respond to suspicious texts:</strong> Even replying "STOP" confirms your number is active.</li>
+                    <li><strong>Verify independently:</strong> If a text claims to be from your bank, call the official number on your card.</li>
+                    <li><strong>Be wary of "urgent" messages:</strong> Scammers often create false emergencies.</li>
+                    <li><strong>Don't click links in texts:</strong> These often lead to phishing sites.</li>
+                    <li><strong>Report suspicious texts:</strong> Forward spam texts to 7726 (SPAM) in the US.</li>
+                </ul>
+                <p>Remember that government agencies and banks will never ask for personal information, payments, or gift cards via text message.</p>
+            """
+        elif any(keyword in question for keyword in bank_keywords):
+            return """
+                <h3>Financial and Banking Scam Protection</h3>
+                <p>Protect your financial information with these guidelines:</p>
+                <ul>
+                    <li><strong>Verify communications:</strong> Contact your bank directly using the number on your card, not numbers provided in messages.</li>
+                    <li><strong>Check account regularly:</strong> Monitor your accounts for unauthorized transactions.</li>
+                    <li><strong>Use strong authentication:</strong> Enable two-factor authentication when available.</li>
+                    <li><strong>Be wary of "problem with your account" messages:</strong> These are common phishing tactics.</li>
+                    <li><strong>Know that banks never ask for:</strong> Full passwords, PIN numbers, or to transfer money to a "safe account".</li>
+                </ul>
+                <p>If you think you've been targeted by a financial scam, contact your bank immediately and change your passwords.</p>
+            """
+        elif any(keyword in question for keyword in personal_info_keywords):
+            return """
+                <h3>Protecting Your Personal Information</h3>
+                <p>Keep your personal information secure with these practices:</p>
+                <ul>
+                    <li><strong>Share selectively:</strong> Only provide personal information on secure and necessary platforms.</li>
+                    <li><strong>Use unique passwords:</strong> Create different passwords for different accounts.</li>
+                    <li><strong>Enable two-factor authentication:</strong> Adds an extra layer of security.</li>
+                    <li><strong>Be cautious with social media:</strong> Limit the personal information you share publicly.</li>
+                    <li><strong>Shred sensitive documents:</strong> Prevent dumpster diving for your information.</li>
+                    <li><strong>Check privacy settings:</strong> Regularly review and update privacy settings on your accounts.</li>
+                </ul>
+                <p>Remember: Your personal information is valuable. Treat it like you would any other valuable possession.</p>
+            """
+        else:
+            # General scam information
+            return """
+                <h3>General Scam Protection Tips</h3>
+                <p>Here are some universal tips to protect yourself from scams:</p>
+                <ul>
+                    <li><strong>If it seems too good to be true, it probably is.</strong> Unrealistic offers are a red flag.</li>
+                    <li><strong>Never send money to someone you haven't met in person.</strong></li>
+                    <li><strong>Don't make rushed decisions.</strong> Scammers create urgency to prevent you from thinking clearly.</li>
+                    <li><strong>Research before you act.</strong> Look up companies, offers, or situations online.</li>
+                    <li><strong>Keep your devices and software updated.</strong> Security patches protect against known vulnerabilities.</li>
+                    <li><strong>Use our scanning tools:</strong> Check suspicious images, links, and files using GS Oasis.</li>
+                </ul>
+                <p>Trust your instincts - if something feels wrong, it's better to be cautious than sorry.</p>
+            """
+    else:
+        # Default response for non-scam related questions
+        return """
+            <h3>GS Oasis AI Assistant</h3>
+            <p>I'm currently running in offline mode. I can provide information on the following topics:</p>
+            <ul>
+                <li>Email scam protection</li>
+                <li>Suspicious link identification</li>
+                <li>Phone and text message scams</li>
+                <li>Financial and banking scams</li>
+                <li>Personal information protection</li>
+                <li>General scam prevention</li>
+            </ul>
+            <p>Please ask a question about one of these topics for specific guidance.</p>
+            
+            <p>You can also use our scanning tools to check:</p>
+            <ul>
+                <li><a href="/scan_image">Images or text message screenshots</a></li>
+                <li><a href="/scan_link">Suspicious links or URLs</a></li>
+                <li><a href="/scan_file">Files and documents</a></li>
+            </ul>
+        """
 
 @app.route('/resources')
 def resources():
@@ -900,8 +1070,8 @@ def login():
                 try:
                     cursor.execute("ALTER TABLE users ADD COLUMN last_login TEXT")
                     print("Added missing last_login column")
-                except:
-                    print("Failed to add last_login column, but continuing...")
+                except sqlite3.OperationalError as e:
+                    print(f"Failed to add last_login column: {str(e)}, but continuing...")
             
             # Now try to update the last_login time
             try:
@@ -1353,47 +1523,107 @@ def preprocess_image_for_ocr(img):
         return img
 
 def extract_text_with_fallback(image_path):
-    """Extract text from images using available methods, with cloud fallback when Tesseract isn't available"""
+    """Extract text from images using available methods, with multiple fallback mechanisms when dependencies aren't available"""
     extracted_text = ""
     
     # First try local Tesseract if available
     if OCR_AVAILABLE:
         try:
             with Image.open(image_path) as img:
+                # Try default OCR first
                 extracted_text = pytesseract.image_to_string(img)
-                if not extracted_text:
-                    # Try with preprocessing if no text found
+                
+                # If no text found, try with preprocessing
+                if not extracted_text or len(extracted_text.strip()) < 5:
                     preprocessed_img = preprocess_image_for_ocr(img)
                     extracted_text = pytesseract.image_to_string(preprocessed_img)
-                return extracted_text
+                    
+                    # If still no text, try different OCR configurations
+                    if not extracted_text or len(extracted_text.strip()) < 5:
+                        # Try different PSM modes (page segmentation modes)
+                        for psm_mode in [3, 6, 4, 11, 12]:  # Various segmentation modes
+                            custom_config = f'--psm {psm_mode} --oem 3'
+                            alt_text = pytesseract.image_to_string(preprocessed_img, config=custom_config)
+                            if alt_text and len(alt_text.strip()) > len(extracted_text.strip()):
+                                extracted_text = alt_text
+                                
+                # Clean up text if found
+                if extracted_text:
+                    extracted_text = extracted_text.strip()
+                    # Remove non-printable characters
+                    extracted_text = ''.join(char for char in extracted_text if char.isprintable() or char.isspace())
+                    return extracted_text
+                
+                # If still no text but OCR ran without errors, return empty string to allow other methods
+                return ""
         except Exception as e:
             print(f"Local OCR failed: {str(e)}")
+            # Continue to fallback methods
     
-    # If we reach here, either Tesseract is not available or it failed
-    # Use our enhanced pattern recognition as fallback
+    # FALLBACK LEVEL 1: If we reach here, either Tesseract is not available or it failed
+    # Use OpenCV-based text detection if available
+    if OPENCV_AVAILABLE:
+        try:
+            # Read image with OpenCV
+            img_cv = cv2.imread(image_path)
+            if img_cv is not None:  # Ensure image was loaded successfully
+                # Try to detect text-like regions using edge detection
+                gray = cv2.cvtColor(img_cv, cv2.COLOR_BGR2GRAY)
+                
+                # Try multiple thresholds for better detection
+                for threshold_value in [100, 150, 200]:
+                    # Apply binary threshold
+                    _, binary = cv2.threshold(gray, threshold_value, 255, cv2.THRESH_BINARY)
+                    
+                    # Look for contours that might be text
+                    contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                    
+                    # If we found many small contours, it might be text
+                    if len(contours) > 10:
+                        # Ratio of contours to image size indicates text density
+                        text_region_ratio = sum(cv2.contourArea(c) for c in contours) / (gray.shape[0] * gray.shape[1])
+                        if text_region_ratio > 0.01:  # More than 1% of image has text-like contours
+                            return "[Image likely contains text, but OCR extraction failed]"
+                
+                # Also try edge detection for text recognition
+                edges = cv2.Canny(gray, 100, 200)
+                text_region_ratio = np.count_nonzero(edges) / (gray.shape[0] * gray.shape[1])
+                if text_region_ratio > 0.05:  # More than 5% of image has edges
+                    return "[Image appears to contain text, but could not be extracted]"
+        except Exception as e:
+            print(f"OpenCV text detection fallback failed: {str(e)}")
+            # Continue to next fallback
+    
+    # FALLBACK LEVEL 2: Basic PIL-only analysis when both OCR and OpenCV are unavailable
     try:
         with Image.open(image_path) as img:
             # Get basic image properties for analysis
             width, height = img.size
-            mode = img.mode
             
-            # Look for visual patterns that suggest text
-            if OPENCV_AVAILABLE:
-                try:
-                    # Use OpenCV for edge detection to identify text-like regions
-                    img_cv = cv2.imread(image_path)
-                    gray = cv2.cvtColor(img_cv, cv2.COLOR_BGR2GRAY)
-                    edges = cv2.Canny(gray, 100, 200)
+            # Simplest possible text detection: check for high contrast areas
+            # Convert to grayscale
+            gray_img = img.convert('L')
+            pixels = list(gray_img.getdata())
+            
+            if pixels:
+                # Check variance in pixel values - text usually has high variance
+                min_val, max_val = min(pixels), max(pixels)
+                if max_val - min_val > 100:  # High contrast threshold
+                    # Count transitions from light to dark (common in text)
+                    transitions = 0
+                    for y in range(height):
+                        row_start = y * width
+                        for x in range(1, width):
+                            # If significant difference between adjacent pixels
+                            if abs(pixels[row_start + x] - pixels[row_start + x - 1]) > 50:
+                                transitions += 1
                     
-                    # Check if there are patterns that look like text
-                    text_region_ratio = np.count_nonzero(edges) / (height * width)
-                    if text_region_ratio > 0.05:  # More than 5% of image has edges
-                        return "[Image appears to contain text, but could not be extracted]"
-                except:
-                    pass
+                    # High number of transitions suggests text
+                    if transitions > width * height * 0.01:  # Threshold based on image size
+                        return "[Image likely contains text, but extraction isn't available without OCR libraries]"
             
-            # If no text patterns were detected, return a generic message
-            return "[Image analyzed, but no extractable text found]"
+            # If nothing detected, return generic message
+            return "[Image analyzed, but no text detected with available tools]"
     except Exception as e:
         return f"[Error analyzing image: {str(e)}]"
 
@@ -1590,3 +1820,43 @@ if __name__ == '__main__':
     update_db_schema()
     
     app.run(debug=True, port=5005)  # Changed port from 5002 to 5005 to resolve port conflict
+
+def fallback_url_check(url):
+    """
+    A simple fallback function to check URL suspiciousness when the url_check module is unavailable
+    Returns a tuple (is_suspicious, reason)
+    """
+    if not url or not isinstance(url, str):
+        return False, ""
+    
+    # Normalize the URL for checking
+    url = url.lower().strip()
+    
+    # Simple patterns that might indicate suspicious URLs
+    suspicious_patterns = [
+        # IP address URLs
+        (r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', "Uses IP address instead of domain name"),
+        
+        # Excessive subdomains (more than 3)
+        (r'([a-z0-9-]+\.){4,}[a-z0-9-]+', "Contains excessive subdomains"),
+        
+        # Common misspellings of popular domains
+        (r'paypa1|amaz0n|g00gle|faceb00k|micros0ft|netfl1x|appleid|veriz0n', "Contains misspelled popular brand name"),
+        
+        # Suspicious TLDs often used for free/temporary domains
+        (r'\.tk$|\.xyz$|\.top$|\.gq$|\.ml$|\.ga$|\.cf$', "Uses a TLD commonly associated with free domains"),
+        
+        # URLs with suspicious keywords
+        (r'login|verify|secure|account|banking|password|update|confirm', "Contains sensitive action keywords"),
+        
+        # Non-HTTPS URLs with sensitive terms
+        (r'^http://.*(login|verify|secure|account|banking|password)', "Uses non-secure HTTP with sensitive actions")
+    ]
+    
+    # Check URL against suspicious patterns
+    for pattern, reason in suspicious_patterns:
+        if re.search(pattern, url):
+            return True, reason
+    
+    # URL doesn't match any suspicious patterns
+    return False, "No suspicious patterns detected"
