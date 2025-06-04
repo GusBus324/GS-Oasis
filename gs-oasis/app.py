@@ -1165,6 +1165,124 @@ def contact():
         
     return render_template('contact.html')
 
+@app.route('/edit_profile', methods=['GET', 'POST'])
+@login_required
+def edit_profile():
+    """
+    Allow users to edit their profile information
+    """
+    username = session.get('username')
+    user_id = session.get('user_id')
+    
+    # Connect to database
+    with sqlite3.connect('database.db') as conn:
+        cursor = conn.cursor()
+        
+        # Get current user info
+        cursor.execute('SELECT email FROM users WHERE id = ?', (user_id,))
+        user_data = cursor.fetchone()
+        
+        if not user_data:
+            flash('User not found.', 'danger')
+            return redirect(url_for('dashboard'))
+        
+        email = user_data[0]
+        
+        # Handle form submission
+        if request.method == 'POST':
+            new_email = request.form.get('email')
+            
+            # Validate email
+            email_pattern = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+            if not email_pattern.match(new_email):
+                flash('Please enter a valid email address.', 'danger')
+                return render_template('edit_profile.html', username=username, email=email)
+            
+            # Check if email has changed
+            if new_email != email:
+                # Check if the new email is already in use by another account
+                cursor.execute('SELECT id FROM users WHERE email = ? AND id != ?', (new_email, user_id))
+                existing_user = cursor.fetchone()
+                
+                if existing_user:
+                    flash('Email address is already in use by another account.', 'danger')
+                    return render_template('edit_profile.html', username=username, email=email)
+                
+                # Update the email
+                try:
+                    cursor.execute('UPDATE users SET email = ? WHERE id = ?', (new_email, user_id))
+                    conn.commit()
+                    flash('Profile updated successfully!', 'success')
+                    return redirect(url_for('dashboard'))
+                except Exception as e:
+                    flash(f'An error occurred: {str(e)}', 'danger')
+                    return render_template('edit_profile.html', username=username, email=email)
+            else:
+                flash('No changes were made.', 'info')
+                return redirect(url_for('dashboard'))
+    
+    return render_template('edit_profile.html', username=username, email=email)
+
+@app.route('/change_password', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    """
+    Allow users to change their password
+    """
+    username = session.get('username')
+    user_id = session.get('user_id')
+    
+    if request.method == 'POST':
+        current_password = request.form.get('current_password')
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
+        
+        # Validate input
+        if not all([current_password, new_password, confirm_password]):
+            flash('All fields are required.', 'danger')
+            return render_template('change_password.html')
+        
+        # Check if new password meets the requirements
+        password_regex = r'^(?=.*[0-9].*[0-9])(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{8,}$'
+        if not re.match(password_regex, new_password):
+            flash('New password must be at least 8 characters long, include at least 2 numbers, and 1 special symbol.', 'danger')
+            return render_template('change_password.html')
+        
+        # Check if new passwords match
+        if new_password != confirm_password:
+            flash('New passwords do not match.', 'danger')
+            return render_template('change_password.html')
+        
+        # Connect to database
+        with sqlite3.connect('database.db') as conn:
+            cursor = conn.cursor()
+            
+            # Verify current password
+            cursor.execute('SELECT password FROM users WHERE id = ?', (user_id,))
+            stored_password_hash = cursor.fetchone()
+            
+            if not stored_password_hash or not check_password_hash(stored_password_hash[0], current_password):
+                flash('Current password is incorrect.', 'danger')
+                return render_template('change_password.html')
+            
+            # Check if new password is different from current
+            if check_password_hash(stored_password_hash[0], new_password):
+                flash('New password must be different from current password.', 'danger')
+                return render_template('change_password.html')
+            
+            # Update password
+            try:
+                hashed_password = generate_password_hash(new_password)
+                cursor.execute('UPDATE users SET password = ? WHERE id = ?', (hashed_password, user_id))
+                conn.commit()
+                flash('Password updated successfully!', 'success')
+                return redirect(url_for('dashboard'))
+            except Exception as e:
+                flash(f'An error occurred: {str(e)}', 'danger')
+                return render_template('change_password.html')
+    
+    return render_template('change_password.html')
+
 # Image analysis utilities
 def analyze_image_content(image_path):
     """

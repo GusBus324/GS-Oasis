@@ -206,8 +206,8 @@
                         <div class="detail-value">{{ last_login }}</div>
                     </div>
                     <div class="detail-buttons">
-                        <a href="#" class="btn btn-primary">Edit Profile</a>
-                        <a href="#" class="btn btn-secondary">Change Password</a>
+                        <a href="{{ url_for('edit_profile') }}" class="btn btn-primary">Edit Profile</a>
+                        <a href="{{ url_for('change_password') }}" class="btn btn-secondary">Change Password</a>
                     </div>
                 </div>
             </section>
