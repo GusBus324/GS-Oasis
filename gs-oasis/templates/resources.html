@@ -9,18 +9,21 @@
     }
     
     .jumbo-logo {
-        max-width: 300px;
+        max-width: 600px; /* Increased from 400px to 600px for much larger display */
         width: 100%;
         height: auto;
         margin: 0 auto 40px;
         display: block;
-        filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
+        filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.6));
         transition: transform 0.5s ease, filter 0.5s ease;
+        border-radius: 15px;
+        background-color: rgba(255, 255, 255, 0.15);
+        padding: 25px;
     }
     
     .jumbo-logo:hover {
         transform: scale(1.05);
-        filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.5));
+        filter: drop-shadow(0 0 40px rgba(255, 255, 255, 0.8));
     }
     
     .stats-container {
@@ -177,7 +180,8 @@
     
     @media (max-width: 768px) {
         .jumbo-logo {
-            max-width: 200px;
+            max-width: 350px; /* Increased from 280px to 350px for mobile */
+            padding: 15px;
         }
         
         .stats-grid, .resource-grid {
