@@ -1023,7 +1023,8 @@ def register():
         password_regex = r'^(?=.*[0-9].*[0-9])(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{8,}$'
         if not re.match(password_regex, password):
             flash('Password must be at least 8 characters long, include at least 2 numbers, and 1 special symbol.', 'danger')
-            return render_template('register.html')
+            # Pass username and email back to form, but never password
+            return render_template('register.html', username=username, email=email)
 
         try:
             current_time = time.strftime("%Y-%m-%d %H:%M:%S")
@@ -1044,7 +1045,8 @@ def register():
             return redirect(url_for('login'))
         except sqlite3.IntegrityError:
             flash('Username already exists.', 'danger')
-            return render_template('register.html')
+            # Pass email back to form but not username (since it's a duplicate) or password
+            return render_template('register.html', email=email)
 
     return render_template('register.html')
 
@@ -1983,10 +1985,10 @@ if __name__ == '__main__':
     update_db_schema()
     
     # Set port as a variable for easier management
-    port = 5008  # Using port 5007 to avoid conflicts with 5005 and 5006
+    port = 5001  # Fixed to use port 5001 as requested
     
     try:
-        app.run(debug=True, port=port)
+        app.run(debug=True, port=port, host='127.0.0.1')
         print(f"Server running on port {port}")
     except OSError as e:
         print(f"Error: {e}")
