@@ -50,6 +50,13 @@ except ImportError:
     OPENCV_AVAILABLE = False
     warnings.warn("OpenCV not available. Image analysis will use fallback methods.")
 
+try:
+    import easyocr
+    EASYOCR_AVAILABLE = True
+except ImportError:
+    EASYOCR_AVAILABLE = False
+    warnings.warn("EasyOCR not available. Primary OCR will fallback to pytesseract.")
+
 app = Flask(__name__)
 app.secret_key = "gs-oasis-secret-key"  # Required for flash messages
 
@@ -347,17 +354,10 @@ def check_for_scam(text):
     
     # Check for exact matches
     for indicator, weight in scam_indicators.items():
-        max_score += weight
         if indicator in text:
-            found_indicators.append(indicator)
-            score += weight
-    
-    # Check for part-word matches
-    for part_word, weight in part_word_indicators.items():
-        if part_word in text:
             # Avoid double counting
-            if not any(indicator for indicator in found_indicators if part_word in indicator):
-                found_indicators.append(part_word)
+            if not any(found_indicator for found_indicator in found_indicators if indicator in found_indicator):
+                found_indicators.append(indicator)
                 score += weight
     
     # Check for suspicious domains and TLDs
@@ -482,11 +482,33 @@ def scan_image():
                 file.save(temp_path)
                 
                 # Perform comprehensive image analysis
-                extracted_text, analysis_results, performed_checks = analyze_image_content(temp_path)
+                try:
+                    result = analyze_image_content(temp_path)
+                    if not isinstance(result, tuple) or len(result) != 3:
+                        # Fallback if function doesn't return expected tuple
+                        extracted_text = ""
+                        analysis_results = [f"❌ Error: analyze_image_content returned {type(result)} instead of tuple"]
+                        performed_checks = ["Error handling"]
+                    else:
+                        extracted_text, analysis_results, performed_checks = result
+                except Exception as e:
+                    # Handle any exception in image analysis
+                    extracted_text = ""
+                    analysis_results = [f"❌ Error during image analysis: {str(e)}"]
+                    performed_checks = ["Error handling"]
                 
                 # Analyze the extracted text for scams if we got any
                 if extracted_text:
-                    is_scam, confidence, reasons = check_for_scam(extracted_text)
+                    try:
+                        result = check_for_scam(extracted_text)
+                        if not isinstance(result, tuple) or len(result) != 3:
+                            # Fallback if function doesn't return expected tuple
+                            is_scam, confidence, reasons = False, 0, [f"Error: check_for_scam returned {type(result)} instead of tuple"]
+                        else:
+                            is_scam, confidence, reasons = result
+                    except Exception as e:
+                        # Handle any exception in scam checking
+                        is_scam, confidence, reasons = False, 0, [f"Error during scam analysis: {str(e)}"]
                     
                     # Attempt to detect if this is a text message screenshot
                     text_message_indicators = [
@@ -1644,7 +1666,30 @@ def extract_text_with_fallback(image_path):
     """Extract text from images using available methods, with multiple fallback mechanisms when dependencies aren't available"""
     extracted_text = ""
     
-    # First try local Tesseract if available
+    # PRIORITY 1: Try EasyOCR first (recommended, no admin required)
+    if EASYOCR_AVAILABLE:
+        try:
+            import easyocr
+            # Initialize EasyOCR reader (this might take a moment on first run to download models)
+            reader = easyocr.Reader(['en'], gpu=False, verbose=False)
+            
+            # Extract text from image
+            results = reader.readtext(image_path)
+            
+            # Combine all detected text
+            if results:
+                extracted_text = ' '.join([detection[1] for detection in results if detection[2] > 0.1])  # confidence > 0.1
+                
+                if extracted_text and len(extracted_text.strip()) > 3:
+                    extracted_text = extracted_text.strip()
+                    # Remove non-printable characters
+                    extracted_text = ''.join(char for char in extracted_text if char.isprintable() or char.isspace())
+                    return extracted_text
+        except Exception as e:
+            print(f"EasyOCR failed: {str(e)}")
+            # Continue to fallback methods
+    
+    # PRIORITY 2: Try local Tesseract if available
     if OCR_AVAILABLE:
         try:
             with Image.open(image_path) as img:
@@ -1937,7 +1982,15 @@ if __name__ == '__main__':
     # Update the database schema on startup
     update_db_schema()
     
-    app.run(debug=True, port=5005)  # Changed port from 5002 to 5005 to resolve port conflict
+    # Set port as a variable for easier management
+    port = 5007  # Using port 5007 to avoid conflicts with 5005 and 5006
+    
+    try:
+        app.run(debug=True, port=port)
+        print(f"Server running on port {port}")
+    except OSError as e:
+        print(f"Error: {e}")
+        print(f"Port {port} is already in use. Try a different port by changing the port variable.")
 
 def fallback_url_check(url):
     """

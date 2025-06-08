@@ -6,9 +6,27 @@ GS Oasis uses Optical Character Recognition (OCR) to extract text from images du
 
 ## Options for OCR Functionality
 
-### Option 1: Non-Administrative Alternative - Google Cloud Vision API (Recommended)
+### Option 1: EasyOCR (Recommended - No Admin Required)
 
-If you don't have administrator access to install Tesseract, you can use Google Cloud Vision API instead:
+EasyOCR is now integrated as the easiest OCR solution that doesn't require administrator privileges:
+
+1. Install EasyOCR:
+   ```
+   pip install easyocr
+   ```
+
+2. EasyOCR will automatically download required models on first use
+3. No additional configuration needed - works out of the box!
+
+**Advantages:**
+- No administrator access required
+- Works offline after initial model download
+- Supports multiple languages
+- Good accuracy for most text types
+
+### Option 2: Google Cloud Vision API (Cloud-based)
+
+If you prefer a cloud-based solution or EasyOCR doesn't work for you:
 
 1. Create a free Google Cloud account at https://cloud.google.com/
 2. Enable the Vision API in Google Cloud Console
@@ -22,14 +40,14 @@ If you don't have administrator access to install Tesseract, you can use Google 
    export GOOGLE_APPLICATION_CREDENTIALS="/path/to/your-credentials.json"
    ```
 
-### Option 2: Using GS Oasis Without OCR
+### Option 3: Using GS Oasis Without OCR
 
 The application will work without OCR, but with reduced functionality:
 - Image scanning will continue to work using alternative methods
 - Text extraction from images will not be available
 - Other security features like QR code detection will still work
 
-### Option 3: Standard Tesseract Installation (Requires admin privileges)
+### Option 4: Tesseract OCR (Requires Admin Privileges)
 
 #### macOS
 

@@ -1,0 +1,10 @@
+Initializing database...
+Database initialization completed successfully.
+Checking and updating database schema...
+Database schema update completed.
+Checking and updating database schema...
+Database schema update completed.
+ * Serving Flask app 'app'
+ * Debug mode: on
+Address already in use
+Port 5005 is in use by another program. Either identify and stop that program, or start the server with a different port.
