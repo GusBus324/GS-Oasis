@@ -289,7 +289,10 @@ def check_for_scam(text):
         'purchase confirmation': 2, 'order status': 2, 'tracking number': 2, 'package delivery': 2,
         
         # Government impersonation
-        'tax refund': 4, 'government grant': 4, 'irs': 3, 'tax authority': 3, 'legal notice': 3,
+        'tax refund': 5, 'eligible for a tax refund': 5, 'tax rebate': 5, 'claim tax': 5, 'government grant': 4, 
+        'irs': 3, 'tax authority': 3, 'legal notice': 3, 'tax message': 5, 'refund of': 4,
+        'tax payment': 4, 'tax return': 4, 'tax agency': 4, 'tax department': 4, 'tax credit': 4,
+        'claim refund': 5, 'unclaimed tax': 5, 'tax relief': 4, 'tax back': 4, 'tax reimbursement': 5,
         'social security': 4, 'legal action': 4, 'lawsuit': 3, 'court': 3, 'warrant': 4,
         'fines': 3, 'penalties': 3, 'law enforcement': 3, 'police': 3, 'arrest': 4,
         
@@ -332,6 +335,50 @@ def check_for_scam(text):
         'urgent': 3, 'immediate': 3, 'gift card': 4
     }
     
+    # Critical word combinations that often appear together in scams
+    # Format: (word1, word2): weight
+    critical_combinations = {
+        ('tax', 'refund'): 5,
+        ('tax', 'claim'): 5, 
+        ('refund', 'click'): 5,
+        ('refund', 'eligible'): 5,
+        ('refund', 'link'): 5,
+        ('eligible', 'claim'): 4,
+        ('tax', 'message'): 4,
+        ('tax', 'eligible'): 4,
+        ('refund', 'congratulations'): 5,
+        ('tax', 'authority'): 4,
+        ('claim', 'now'): 4,
+        ('tax', 'rebate'): 4,
+        ('refund', 'today'): 4,
+        ('click', 'claim'): 4,
+        ('tax', 'payment'): 4,
+        ('click', 'link'): 5,
+        ('refund', 'amount'): 4,
+        ('refund', 'due'): 5,
+        ('tax', 'credit'): 4,
+        ('tax', 'back'): 4,
+        ('tax', 'department'): 5,
+        ('refund', 'process'): 5,
+        ('click', 'receive'): 5,
+        ('claim', 'online'): 4
+    }
+    
+    # Legitimate combinations that are common in non-scam communications
+    legitimate_combinations = {
+        ('standard', 'refund'): -5,
+        ('processed', 'refund'): -5,
+        ('normal', 'processing'): -5,
+        ('return', 'processed'): -5,
+        ('weeks', 'time'): -5,
+        ('refund', 'time'): -5,
+        ('standard', 'time'): -5,
+        ('official', 'website'): -5,
+        ('direct', 'deposit'): -5,
+        ('tax', 'return'): -3,  # "tax return" is often legitimate
+        ('annual', 'return'): -5
+    }
+    
     # Look for domain mismatches (e.g. apple.com-secure.xyz)
     domain_pattern = r'(?:https?://)?(?:www\.)?([a-zA-Z0-9-]+)\.[a-zA-Z0-9-.]+'
     domains = re.findall(domain_pattern, text)
@@ -359,6 +406,22 @@ def check_for_scam(text):
             if not any(found_indicator for found_indicator in found_indicators if indicator in found_indicator):
                 found_indicators.append(indicator)
                 score += weight
+                max_score += weight
+    
+    # Check for critical word combinations
+    for (word1, word2), weight in critical_combinations.items():
+        if word1 in text and word2 in text:
+            # If both words are within 5 words of each other, it's more suspicious
+            word_list = text.split()
+            for i, word in enumerate(word_list):
+                if word1 in word:
+                    # Check nearby words for word2
+                    nearby_text = ' '.join(word_list[max(0, i-5):min(len(word_list), i+6)])
+                    if word2 in nearby_text:
+                        found_indicators.append(f"{word1} + {word2}")
+                        score += weight
+                        max_score += weight
+                        break
     
     # Check for suspicious domains and TLDs
     found_suspicious_domains = []
@@ -406,8 +469,17 @@ def check_for_scam(text):
     else:
         confidence = 0
     
-    # Lower threshold for identification as a scam
-    is_scam = confidence > 25  # Lowered from 30 to catch more scams
+    # Check if the text is about taxes but seems legitimate
+    is_tax_related = any(term in text for term in ['tax', 'refund', 'irs', 'tax return'])
+    has_legitimate_markers = any(term in text for term in ['standard refund time', 'processed', 'weeks', 'scheduled', 'standard', 'normal process'])
+    
+    # Apply a higher threshold for tax-related content that has legitimate markers
+    threshold = 25  # Default threshold
+    if is_tax_related and has_legitimate_markers:
+        threshold = 40  # Higher threshold to reduce false positives for legitimate tax communications
+    
+    # Determine if it's a scam
+    is_scam = confidence > threshold
     
     # Generate reasons if it's a potential scam
     reasons = []
@@ -424,6 +496,27 @@ def check_for_scam(text):
             reasons.append("Attempts to impersonate a financial institution")
         if any(term in text for term in ['bitcoin', 'crypto', 'investment', 'trading', 'guarantee']):
             reasons.append("Offers suspicious investment opportunities")
+        
+        # Special handling for tax refund scams - look for more specific indicators
+        tax_scam_keywords = ['eligible for a tax refund', 'claim tax', 'tax refund', 'click', 'link', 'claim now',
+                             'unclaimed tax', 'verify identity', 'reply with', 'click here', 'tax message', 'tax reimbursement']
+        
+        # Only consider it a tax refund scam if we have at least 2 strong indicators
+        tax_scam_count = sum(1 for word in tax_scam_keywords if word in text)
+        
+        # Exclude legitimate phrases that could trigger false positives
+        legitimate_phrases = ['standard refund time', 'weeks', 'processed', 'scheduled', 'direct deposit', 'normal processing']
+        legitimate_count = sum(1 for word in legitimate_phrases if word in text)
+        
+        # If we have enough tax scam indicators and not too many legitimate phrases
+        if tax_scam_count >= 2 and legitimate_count < 2:
+            reasons.append("Appears to be a tax refund scam")
+            
+        # Check for suspicious links specifically related to tax refunds
+        if any(term in text for term in ['click', 'link']) and any(term in text for term in ['refund', 'tax', 'claim']):
+            # Don't flag if it appears to be information about a legitimate process
+            if not any(term in text for term in ['normal processing', 'standard refund', 'official website', 'government portal']):
+                reasons.append("Contains suspicious link related to tax refunds")
     
     # Add debug info to help with troubleshooting when needed
     # Uncomment to debug: print(f"Text: {text[:100]}..., Score: {score}, Confidence: {confidence}, Scam: {is_scam}")
@@ -470,6 +563,7 @@ def scan_image():
             confidence = 0
             reasons = []
             is_text_message = False
+            ai_analysis_summary = ""
             
             try:
                 # Generate a unique filename for the temp image
@@ -506,31 +600,24 @@ def scan_image():
                             is_scam, confidence, reasons = False, 0, [f"Error: check_for_scam returned {type(result)} instead of tuple"]
                         else:
                             is_scam, confidence, reasons = result
+                        
+                        # If AI is available, get its analysis
+                        if AI_AVAILABLE and extracted_text.strip():
+                            try:
+                                ai_prompt = f"Analyze the following text extracted from an image and determine if it is a scam. Provide a brief summary of your findings. Text: {extracted_text}"
+                                ai_response = get_open_ai_repsonse(ai_prompt)
+                                if ai_response:
+                                    ai_analysis_summary = f"AI Assistant Analysis: {ai_response}"
+                                    analysis_results.append(ai_analysis_summary) # Add AI summary to results
+                                else:
+                                    analysis_results.append("AI Assistant: Could not get a response.")
+                            except Exception as ai_error:
+                                analysis_results.append(f"AI Assistant Error: {str(ai_error)}")
+                                
                     except Exception as e:
                         # Handle any exception in scam checking
                         is_scam, confidence, reasons = False, 0, [f"Error during scam analysis: {str(e)}"]
-                    
-                    # Attempt to detect if this is a text message screenshot
-                    text_message_indicators = [
-                        'sms', 'text message', 'imessage', 'message', 'chat', 
-                        'sent from my iphone', 'sent from my android',
-                        'delivered', 'read', 'typing...', 'sent', 'received'
-                    ]
-                    
-                    # Check if any of the text message indicators are present
-                    is_text_message = any(indicator in extracted_text.lower() for indicator in text_message_indicators)
-                    
-                    # Additional checks for text message UI elements in the extracted text
-                    if not is_text_message:
-                        message_patterns = [
-                            r'\d{1,2}:\d{2}\s?(AM|PM|am|pm)',  # Time patterns like "10:30 AM"
-                            r'(Today|Yesterday)(\s+at\s+\d{1,2}:\d{2})?',  # Today/Yesterday headers
-                            r'(Read|Delivered|Sent|Not Delivered)',  # Message status indicators
-                            r'(iMessage|SMS)',  # Message type indicators
-                        ]
-                        
-                        # Check if any message patterns are present in the text
-                        is_text_message = any(re.search(pattern, extracted_text) for pattern in message_patterns)
+
                 
                 # Create a detailed result message
                 if is_text_message:
