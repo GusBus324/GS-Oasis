@@ -8,6 +8,11 @@
         {% if scan_type == 'image' %}
             <div class="result-icon">🖼️</div>
             <h2>Image Scan Results</h2>
+            {% if image_filename %}
+                <div class="scanned-image-container">
+                    <img src="{{ url_for('static', filename='temp/' + image_filename) }}" alt="Scanned Image" class="scanned-image">
+                </div>
+            {% endif %}
         {% elif scan_type == 'link' %}
             <div class="result-icon">🔗</div>
             <h2>Link Scan Results</h2>
@@ -24,6 +29,113 @@
         </div>
         
         {% if scan_type == 'image' %}
+        <div class="scan-tech-explanation">
+            <h3>About Our Image Analysis Technology</h3>
+            <div class="tech-details">
+                <div class="tech-section">
+                    <h4>Visual Analysis</h4>
+                    <p>Our scanner examines the visual properties of your image:</p>
+                    <ul>
+                        <li><strong>Image Integrity:</strong> We check for signs of manipulation, unusual dimensions, and suspicious compression artifacts</li>
+                        <li><strong>Hidden Elements:</strong> We detect transparent pixels, unusual color distributions, and other techniques used to hide malicious content</li>
+                        <li><strong>Perceptual Hash:</strong> We compare key visual features against known scam patterns</li>
+                        <li><strong>Metadata Analysis:</strong> We examine hidden information in file headers and EXIF data</li>
+                    </ul>
+                </div>
+                <div class="tech-section">
+                    <h4>Text Recognition</h4>
+                    <p>Our advanced OCR technology:</p>
+                    <ul>
+                        <li><strong>Multi-pass OCR:</strong> We use multiple image processing techniques to ensure all text is captured</li>
+                        <li><strong>Image Preprocessing:</strong> We enhance image quality with filters to improve text extraction</li>
+                        <li><strong>Text Analysis:</strong> We scan extracted text for over 100 scam indicators and patterns</li>
+                        <li><strong>Language Processing:</strong> We detect urgency, threats, promises, and other manipulation tactics</li>
+                    </ul>
+                </div>
+                <div class="tech-section">
+                    <h4>Specialized Detection</h4>
+                    <p>Additional security features:</p>
+                    <ul>
+                        <li><strong>QR Code Analysis:</strong> We decode QR codes and analyze contained URLs for malicious content</li>
+                        <li><strong>Steganography Detection:</strong> We check for hidden data concealed in image pixels</li>
+                        <li><strong>File Format Validation:</strong> We verify file headers and formats to detect tampering</li>
+                        <li><strong>Entropy Analysis:</strong> We measure information density to identify suspicious patterns</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="result-summary {% if is_scam %}scam-detected{% else %}no-scam-detected{% endif %}">
+            <h3>{{ scam_type_display | default('Analysis Result') }}</h3>
+            {% if confidence is defined and confidence is not none %}
+                <p>Confidence: {{ confidence }}%</p>
+            {% endif %}
+        </div>
+
+        {% if reasons %}
+        <div class="result-details">
+            <h4>Detection Reasons:</h4>
+            <ul>
+                {% for reason in reasons %}
+                    <li>{{ reason }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if scam_advice_steps %}
+        <div class="education-tips">
+            <h4>⚠️ Advice & How to Avoid This Scam:</h4>
+            <ul>
+                {% for step in scam_advice_steps %}
+                    <li>{{ step }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if extracted_text %}
+        <div class="extracted-text-container">
+            <h4>📝 Extracted Text:</h4>
+            <pre class="extracted-text">{{ extracted_text }}</pre>
+        </div>
+        {% endif %}
+
+        {% if analysis_results %}
+        <div class="analysis-breakdown">
+            <h4>🔍 Analysis Breakdown:</h4>
+            <ul>
+                {% for result_item in analysis_results %}
+                    {# Check if this item is the AI summary to style it differently or add a heading #}
+                    {% if "AI Assistant Analysis:" in result_item %}
+                        <li><strong>🤖 AI Assistant:</strong> {{ result_item | replace("AI Assistant Analysis:", "") | trim }}</li>
+                    {% else %}
+                        <li>{{ result_item }}</li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        
+        {% if performed_checks %}
+        <div class="performed-checks-container">
+            <h4>✅ Checks Performed:</h4>
+            <ul>
+                {% for check in performed_checks %}
+                    <li>{{ check }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {# This is the original generic result message display, which might be redundant now #}
+        {# Consider removing or integrating its content if scam_type_display and advice cover it #}
+        {# <div class="result-content"> #}
+        {# <p class="result-message">{{ result|safe }}</p> #}
+        {# </div> #}
+        
+        {% if scan_type == 'image' and not image_filename %} {# Only show this if image scan but no image displayed yet #}
         <div class="scan-tech-explanation">
             <h3>About Our Image Analysis Technology</h3>
             <div class="tech-details">
@@ -86,29 +198,111 @@
         border-radius: 15px;
         padding: 30px;
         box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-        text-align: center;
+        /* text-align: center; Removed for better section alignment */
+        text-align: left; /* Changed for better section alignment */
     }
     
     .result-icon {
         font-size: 3rem;
         margin-bottom: 15px;
+        text-align: center; /* Center icon */
+    }
+
+    .result-card h2 { /* Center main title like "Image Scan Results" */
+        text-align: center;
+        margin-bottom: 20px;
     }
     
-    .result-content {
+    .result-summary {
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .result-summary.scam-detected {
+        background-color: #ffebee; /* Light red for scam */
+        border-left: 5px solid #e53935; /* Darker red */
+        color: #c62828; /* Dark red text */
+    }
+
+    .result-summary.no-scam-detected {
+        background-color: #e8f5e9; /* Light green for no scam */
+        border-left: 5px solid #43a047; /* Darker green */
+        color: #2e7d32; /* Dark green text */
+    }
+
+    .result-summary h3 {
+        margin-top: 0;
+        margin-bottom: 5px;
+        font-size: 1.4rem;
+    }
+
+    .result-summary p {
+        margin-bottom: 0;
+        font-size: 1rem;
+        font-weight: bold;
+    }
+
+    .result-details,
+    .extracted-text-container,
+    .analysis-breakdown,
+    .performed-checks-container {
         margin: 25px 0;
-        text-align: left;
         padding: 20px;
         background-color: #f9f9f9;
         border-radius: 10px;
-        border-left: 5px solid #4CAF50;
+        border-left: 5px solid var(--primary-color); /* Default theme color */
+    }
+
+    .result-details h4,
+    .extracted-text-container h4,
+    .analysis-breakdown h4,
+    .performed-checks-container h4,
+    .education-tips h4 { /* Shared style for all section titles */
+        color: var(--primary-color);
+        margin-top: 0;
+        margin-bottom: 15px;
+        font-size: 1.2rem;
+        border-bottom: 2px solid var(--secondary-color);
+        padding-bottom: 8px;
+    }
+
+    .result-details ul,
+    .analysis-breakdown ul,
+    .performed-checks-container ul {
+        list-style-type: none;
+        padding-left: 0;
+    }
+
+    .result-details li,
+    .analysis-breakdown li,
+    .performed-checks-container li {
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+        line-height: 1.6;
     }
     
-    .result-content p {
-        margin-bottom: 10px;
-        line-height: 1.5;
+    .result-details li:last-child,
+    .analysis-breakdown li:last-child,
+    .performed-checks-container li:last-child {
+        border-bottom: none;
     }
     
-    /* Extracted Text Section */
+    .scanned-image-container {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .scanned-image {
+        max-width: 100%;
+        max-height: 400px;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        border: 1px solid #ddd;
+    }
+    
+    /* Extracted Text Section - keeping existing styles, just ensuring container is there */
     .extracted-text {
         background-color: #f5f9ff;
         border-left: 4px solid var(--primary-color);
@@ -134,20 +328,20 @@
     .education-tips {
         margin-top: 25px;
         padding: 20px;
-        background-color: rgba(26, 42, 108, 0.05);
+        background-color: #fff3e0; /* Light orange for advice */
         border-radius: 10px;
-        border-left: 5px solid var(--secondary-color);
+        border-left: 5px solid #ff9800; /* Orange */
     }
     
-    .education-tips h3 {
-        color: var(--primary-color);
+    .education-tips h3 { /* This was h3, changed to h4 to match other sections */
+        color: #e65100; /* Darker orange */
         margin-bottom: 15px;
         font-size: 1.2rem;
     }
     
     .education-tips ul {
         padding-left: 20px;
-        margin-bottom: 15px;
+        margin-bottom: 0; /* Removed bottom margin as li has it */
     }
     
     .education-tips li {
@@ -163,16 +357,16 @@
         margin-top: 10px;
     }
     
-    /* Styles for different risk levels */
-    .result-message:has(⚠️) .education-tips {
-        border-left-color: var(--warning-color);
-    }
+    /* Styles for different risk levels - these might be superseded by new summary block */
+    /* .result-message:has(⚠️) .education-tips { */
+        /* border-left-color: var(--warning-color); */
+    /* } */
     
-    .result-message:has(✅) .education-tips {
-        border-left-color: var(--success-color);
-    }
+    /* .result-message:has(✅) .education-tips { */
+        /* border-left-color: var(--success-color); */
+    /* } */
     
-    /* AI Recommendation Section */
+    /* AI Recommendation Section - keeping existing styles */
     .ai-recommendation {
         margin-top: 30px;
         padding: 15px;
