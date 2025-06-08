@@ -1983,7 +1983,7 @@ if __name__ == '__main__':
     update_db_schema()
     
     # Set port as a variable for easier management
-    port = 5007  # Using port 5007 to avoid conflicts with 5005 and 5006
+    port = 5008  # Using port 5007 to avoid conflicts with 5005 and 5006
     
     try:
         app.run(debug=True, port=port)
