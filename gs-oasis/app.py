@@ -710,14 +710,17 @@ def scan_image():
                                     result_msg += f"\n• {finding}"
                 
                 # Add information about extracted text
-                if extracted_text and len(extracted_text) > 20:
+                if extracted_text and len(extracted_text) > 20 and not extracted_text.startswith("[Please upload"):
                     # Only show a snippet if there's a lot of text
                     text_preview = extracted_text[:150] + "..." if len(extracted_text) > 150 else extracted_text
                     result_msg += f"\n\n<div class='extracted-text'><strong>📝 Extracted Text:</strong><br>\"{text_preview}\"</div>"
-                elif extracted_text:
+                elif extracted_text and not extracted_text.startswith("[Please upload") and not extracted_text.startswith("[No text detected"):
                     result_msg += f"\n\n<div class='extracted-text'><strong>📝 Extracted Text:</strong><br>\"{extracted_text}\"</div>"
+                elif extracted_text and (extracted_text.startswith("[Please upload") or extracted_text.startswith("[No text detected")):
+                    message = extracted_text.strip("[]")
+                    result_msg += f"\n\n<div class='extracted-text warning'><strong>📝 Text Extraction Warning:</strong><br>{message}</div>"
                 else:
-                    result_msg += "\n\n<div class='extracted-text'><strong>📝 Text Extraction:</strong><br>No readable text was found in this image.</div>"
+                    result_msg += "\n\n<div class='extracted-text warning'><strong>📝 Text Extraction:</strong><br>Please upload a clearer image for text recognition.</div>"
                 
                 # Add specific guidance for text message scams
                 if is_text_message and is_scam:
@@ -1828,20 +1831,18 @@ def extract_text_with_fallback(image_path):
                     _, binary = cv2.threshold(gray, threshold_value, 255, cv2.THRESH_BINARY)
                     
                     # Look for contours that might be text
-                    contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-                    
-                    # If we found many small contours, it might be text
-                    if len(contours) > 10:
-                        # Ratio of contours to image size indicates text density
-                        text_region_ratio = sum(cv2.contourArea(c) for c in contours) / (gray.shape[0] * gray.shape[1])
-                        if text_region_ratio > 0.01:  # More than 1% of image has text-like contours
-                            return "[Image likely contains text, but OCR extraction failed]"
+                    contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)                        # If we found many small contours, it might be text
+                     if len(contours) > 10:
+                            # Ratio of contours to image size indicates text density
+                            text_region_ratio = sum(cv2.contourArea(c) for c in contours) / (gray.shape[0] * gray.shape[1])
+                            if text_region_ratio > 0.01:  # More than 1% of image has text-like contours
+                                return "[Please upload a clearer image for better text recognition]"
                 
                 # Also try edge detection for text recognition
                 edges = cv2.Canny(gray, 100, 200)
                 text_region_ratio = np.count_nonzero(edges) / (gray.shape[0] * gray.shape[1])
                 if text_region_ratio > 0.05:  # More than 5% of image has edges
-                    return "[Image appears to contain text, but could not be extracted]"
+                    return "[Please upload a clearer image for better text recognition]"
         except Exception as e:
             print(f"OpenCV text detection fallback failed: {str(e)}")
             # Continue to next fallback
@@ -1872,10 +1873,10 @@ def extract_text_with_fallback(image_path):
                     
                     # High number of transitions suggests text
                     if transitions > width * height * 0.01:  # Threshold based on image size
-                        return "[Image likely contains text, but extraction isn't available without OCR libraries]"
+                        return "[Please upload a clearer image for better text recognition]"
             
             # If nothing detected, return generic message
-            return "[Image analyzed, but no text detected with available tools]"
+            return "[No text detected in the image. If there should be text, please upload a clearer image]"
     except Exception as e:
         return f"[Error analyzing image: {str(e)}]"
 
