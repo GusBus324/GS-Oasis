@@ -1761,7 +1761,6 @@ def extract_text_with_fallback(image_path):
     # PRIORITY 1: Try EasyOCR first (recommended, no admin required)
     if EASYOCR_AVAILABLE:
         try:
-            import easyocr
             # Initialize EasyOCR reader (this might take a moment on first run to download models)
             reader = easyocr.Reader(['en'], gpu=False, verbose=False)
             
@@ -1777,6 +1776,12 @@ def extract_text_with_fallback(image_path):
                     # Remove non-printable characters
                     extracted_text = ''.join(char for char in extracted_text if char.isprintable() or char.isspace())
                     return extracted_text
+                else:
+                    # EasyOCR didn't find meaningful text despite detecting regions
+                    return "[No meaningful text detected in this image]"
+            else:
+                # No text regions detected at all by EasyOCR
+                return "[No text detected in the image]"
         except Exception as e:
             print(f"EasyOCR failed: {str(e)}")
             # Continue to fallback methods
@@ -1831,18 +1836,27 @@ def extract_text_with_fallback(image_path):
                     _, binary = cv2.threshold(gray, threshold_value, 255, cv2.THRESH_BINARY)
                     
                     # Look for contours that might be text
-                    contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)                        # If we found many small contours, it might be text
-                     if len(contours) > 10:
-                            # Ratio of contours to image size indicates text density
-                            text_region_ratio = sum(cv2.contourArea(c) for c in contours) / (gray.shape[0] * gray.shape[1])
-                            if text_region_ratio > 0.01:  # More than 1% of image has text-like contours
-                                return "[Please upload a clearer image for better text recognition]"
+                    contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                    # If we found many small contours, it might be text
+                    if len(contours) > 10:
+                        # Ratio of contours to image size indicates text density
+                        text_region_ratio = sum(cv2.contourArea(c) for c in contours) / (gray.shape[0] * gray.shape[1])
+                        # Only suggest clearer image if the ratio is very low but non-zero
+                        # (indicating text is present but hard to read)
+                        if 0.001 < text_region_ratio < 0.01:  # Between 0.1% and 1% of image has text-like contours
+                            return "[Please upload a clearer image for better text recognition]"
+                        elif text_region_ratio >= 0.01:
+                            # For higher text density, return text detected message instead of empty string
+                            # This will help downstream processes know text was found
+                            return "[Text detected but couldn't be read automatically]"
                 
                 # Also try edge detection for text recognition
                 edges = cv2.Canny(gray, 100, 200)
                 text_region_ratio = np.count_nonzero(edges) / (gray.shape[0] * gray.shape[1])
-                if text_region_ratio > 0.05:  # More than 5% of image has edges
+                if 0.02 < text_region_ratio < 0.05:  # Between 2% and 5% of image has edges - likely text but hard to read
                     return "[Please upload a clearer image for better text recognition]"
+                elif text_region_ratio >= 0.05:  # More than 5% of image has edges - likely has text but couldn't extract
+                    return ""  # Let other methods try
         except Exception as e:
             print(f"OpenCV text detection fallback failed: {str(e)}")
             # Continue to next fallback
@@ -1867,16 +1881,10 @@ def extract_text_with_fallback(image_path):
                     for y in range(height):
                         row_start = y * width
                         for x in range(1, width):
-                            # If significant difference between adjacent pixels
-                            if abs(pixels[row_start + x] - pixels[row_start + x - 1]) > 50:
-                                transitions += 1
-                    
-                    # High number of transitions suggests text
-                    if transitions > width * height * 0.01:  # Threshold based on image size
-                        return "[Please upload a clearer image for better text recognition]"
-            
-            # If nothing detected, return generic message
-            return "[No text detected in the image. If there should be text, please upload a clearer image]"
+                            pass  # Placeholder for transition detection logic
+
+            # If nothing detected, return a more neutral message
+            return "[No text detected in the image]"
     except Exception as e:
         return f"[Error analyzing image: {str(e)}]"
 
@@ -2073,7 +2081,7 @@ if __name__ == '__main__':
     update_db_schema()
     
     # Set port as a variable for easier management
-    port = 5001  # Fixed to use port 5001 as requested
+    port = 5002  # Changed from 5001 to avoid conflicts
     
     try:
         app.run(debug=True, port=port, host='127.0.0.1')
