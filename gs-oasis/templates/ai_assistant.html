@@ -17,7 +17,7 @@
     </div>
     
     <form action="{{ url_for('ai_assistant') }}" method="POST">
-        <textarea name="question" id="questionBox" placeholder="Paste the suspicious message or describe the situation you're concerned about..." required></textarea>
+        <textarea name="question" id="questionBox" placeholder="Paste the suspicious message or describe the situation you're concerned about..." required>{% if user_question %}{{ user_question }}{% endif %}</textarea>
         <button type="submit">Analyze with AI</button>
     </form>
     

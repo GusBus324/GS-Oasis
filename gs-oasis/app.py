@@ -955,25 +955,38 @@ def scan_results():
 @login_required
 def ai_assistant():
     response = None
+    user_question = None
+    
     if request.method == 'POST':
         user_question = request.form.get('question')
         
         if AI_AVAILABLE:
             try:
                 # Try to get response from OpenAI
-                response = get_open_ai_repsonse(user_question)
+                ai_response = get_open_ai_repsonse(user_question)
                 
                 # If response is empty or None, fall back to rule-based system
-                if not response:
-                    response = generate_fallback_response(user_question)
+                if not ai_response:
+                    ai_response = generate_fallback_response(user_question)
             except Exception as e:
                 print(f"Error with OpenAI API: {str(e)}")
-                response = generate_fallback_response(user_question)
+                ai_response = generate_fallback_response(user_question)
         else:
             # OpenAI integration not available, use fallback
-            response = generate_fallback_response(user_question)
+            ai_response = generate_fallback_response(user_question)
+        
+        # Format the complete response with the user's question included
+        response = f"""
+            <div class="user-question">
+                <h4>You asked:</h4>
+                <p>"{user_question}"</p>
+            </div>
+            <div class="ai-response">
+                {ai_response}
+            </div>
+        """
             
-    return render_template('ai_assistant.html', response=response)
+    return render_template('ai_assistant.html', response=response, user_question=user_question)
 
 def generate_fallback_response(question):
     """
@@ -983,12 +996,40 @@ def generate_fallback_response(question):
     question = question.lower()
     
     # Common scam-related keywords
-    scam_keywords = ['scam', 'phishing', 'fake', 'fraud', 'suspicious', 'spam']
+    scam_keywords = ['scam', 'phishing', 'fake', 'fraud', 'suspicious', 'spam', 'con', 'swindle', 'trick', 'deceive']
     email_keywords = ['email', 'message', 'inbox']
-    link_keywords = ['link', 'url', 'website', 'click']
-    phone_keywords = ['call', 'phone', 'text', 'sms', 'message']
-    bank_keywords = ['bank', 'account', 'credit card', 'debit card', 'financial']
-    personal_info_keywords = ['password', 'ssn', 'social security', 'identity', 'personal information']
+    link_keywords = ['link', 'url', 'website', 'click', 'web', 'http']
+    phone_keywords = ['call', 'phone', 'text', 'sms', 'message', 'robocall', 'voice']
+    bank_keywords = ['bank', 'account', 'credit card', 'debit card', 'financial', 'money', 'payment', 'transaction']
+    personal_info_keywords = ['password', 'ssn', 'social security', 'identity', 'personal information', 'id', 'credentials']
+    investment_keywords = ['investment', 'crypto', 'bitcoin', 'stock', 'trading', 'profit', 'returns', 'forex', 'opportunity']
+    romance_keywords = ['romance', 'dating', 'relationship', 'love', 'partner', 'girlfriend', 'boyfriend', 'tinder', 'match']
+    tech_support_keywords = ['tech support', 'computer', 'virus', 'malware', 'microsoft', 'apple', 'remote access', 'screen', 'repair']
+    recovery_keywords = ['victim', 'lost money', 'already', 'fell for', 'recover', 'report', 'happened', 'help me', 'scammed me', 'stole']
+    
+    # Check for recovery questions first (if someone has already been scammed)
+    if any(keyword in question for keyword in recovery_keywords) and any(keyword in question for keyword in scam_keywords):
+        return """
+            <h3>What To Do If You've Been Scammed</h3>
+            <p>If you've fallen victim to a scam, take these steps immediately:</p>
+            <ul>
+                <li><strong>Act quickly:</strong> The faster you act, the better chance you have of minimizing damage.</li>
+                <li><strong>Financial accounts:</strong> Contact your bank or credit card company immediately to stop or reverse payments.</li>
+                <li><strong>Change passwords:</strong> Update passwords for all accounts, especially email and banking.</li>
+                <li><strong>Report the scam:</strong> 
+                    <ul>
+                        <li>File a report with your local police</li>
+                        <li>Report to the Federal Trade Commission (FTC) at <a href="https://reportfraud.ftc.gov" target="_blank">ReportFraud.ftc.gov</a></li>
+                        <li>Report to the FBI's Internet Crime Complaint Center (IC3) at <a href="https://www.ic3.gov" target="_blank">IC3.gov</a></li>
+                        <li>For identity theft, visit <a href="https://identitytheft.gov" target="_blank">IdentityTheft.gov</a></li>
+                    </ul>
+                </li>
+                <li><strong>Document everything:</strong> Save all communications, receipts, and evidence related to the scam.</li>
+                <li><strong>Check credit reports:</strong> Monitor your credit reports for unauthorized accounts or activity.</li>
+                <li><strong>Contact credit bureaus:</strong> Consider placing a fraud alert or credit freeze with the major credit bureaus.</li>
+            </ul>
+            <p>Remember that recovering lost money isn't always possible, but acting quickly gives you the best chance. Don't be embarrassed to report scams - your report helps prevent others from becoming victims too.</p>
+        """
     
     # Check for question categories
     if any(keyword in question for keyword in scam_keywords):
@@ -1003,6 +1044,9 @@ def generate_fallback_response(question):
                     <li><strong>Grammar and spelling:</strong> Professional companies rarely send emails with poor grammar or spelling mistakes.</li>
                     <li><strong>Suspicious attachments:</strong> Never open attachments from unknown senders.</li>
                     <li><strong>Requests for personal information:</strong> Legitimate organizations rarely ask for sensitive information via email.</li>
+                    <li><strong>Generic greetings:</strong> "Dear Customer" instead of your name may indicate a mass-sent scam.</li>
+                    <li><strong>Unexpected emails:</strong> Be suspicious of emails about accounts you don't have or orders you didn't place.</li>
+                    <li><strong>Check the domain:</strong> Legitimate companies use their own domains, not public email services.</li>
                 </ul>
                 <p>If you suspect an email is a scam, delete it and don't interact with it in any way.</p>
             """
@@ -1016,6 +1060,9 @@ def generate_fallback_response(question):
                     <li><strong>Be cautious of shortened URLs:</strong> They can hide the actual destination.</li>
                     <li><strong>Check for excessive subdomains:</strong> Multiple dots in a URL can be suspicious.</li>
                     <li><strong>Use our scan link feature:</strong> Paste any suspicious link into our scanner to check it.</li>
+                    <li><strong>Check for unusual TLDs:</strong> Be wary of unfamiliar top-level domains like .xyz, .tk, or .info.</li>
+                    <li><strong>Hover before clicking:</strong> Hover your mouse over a link to see the actual destination URL.</li>
+                    <li><strong>Be suspicious of IP addresses:</strong> Links containing IP addresses (like http://123.45.67.89) instead of domain names are often malicious.</li>
                 </ul>
                 <p>When in doubt, don't click. Type the company's official URL directly into your browser instead.</p>
             """
@@ -1029,9 +1076,12 @@ def generate_fallback_response(question):
                     <li><strong>Verify independently:</strong> If a text claims to be from your bank, call the official number on your card.</li>
                     <li><strong>Be wary of "urgent" messages:</strong> Scammers often create false emergencies.</li>
                     <li><strong>Don't click links in texts:</strong> These often lead to phishing sites.</li>
-                    <li><strong>Report suspicious texts:</strong> Forward spam texts to 7726 (SPAM) in the US.</li>
+                    result_msg += "\n<li><strong>Report suspicious texts:</strong> Forward spam texts to 7726 (SPAM) in the US.</li>"
+                    result_msg += "\n<li><strong>Be skeptical of caller ID:</strong> Scammers can spoof phone numbers to appear legitimate.</li>"
+                    result_msg += "\n<li><strong>Don't give remote access:</strong> Never give anyone remote access to your computer or device unless you initiated contact with a trusted company.</li>"
+                    result_msg += "\n<li><strong>Hang up on robocalls:</strong> If you answer a call and hear a recorded message, hang up immediately.</li>"
                 </ul>
-                <p>Remember that government agencies and banks will never ask for personal information, payments, or gift cards via text message.</p>
+                <p>Remember that government agencies and banks will never ask for personal information, payments, or gift cards via text message or phone call.</p>
             """
         elif any(keyword in question for keyword in bank_keywords):
             return """
@@ -1043,8 +1093,59 @@ def generate_fallback_response(question):
                     <li><strong>Use strong authentication:</strong> Enable two-factor authentication when available.</li>
                     <li><strong>Be wary of "problem with your account" messages:</strong> These are common phishing tactics.</li>
                     <li><strong>Know that banks never ask for:</strong> Full passwords, PIN numbers, or to transfer money to a "safe account".</li>
+                    <li><strong>Be suspicious of payment demands:</strong> Legitimate businesses don't typically demand immediate payment by gift cards, wire transfers, or cryptocurrency.</li>
+                    <li><strong>Check for secure websites:</strong> Only enter financial information on websites with HTTPS (lock icon).</li>
+                    <li><strong>Be cautious of check scams:</strong> Never accept a check for more than you're owed and then send back the difference.</li>
                 </ul>
                 <p>If you think you've been targeted by a financial scam, contact your bank immediately and change your passwords.</p>
+            """
+        elif any(keyword in question for keyword in investment_keywords):
+            return """
+                <h3>Investment and Cryptocurrency Scam Protection</h3>
+                <p>Protect yourself from investment frauds with these guidelines:</p>
+                <ul>
+                    <li><strong>Guaranteed returns are red flags:</strong> No investment can guarantee profits.</li>
+                    <li><strong>Pressure tactics:</strong> Be wary of anyone pushing you to "act fast" or "buy now."</li>
+                    <li><strong>Verify credentials:</strong> Check if investment professionals are registered with the SEC or FINRA.</li>
+                    <li><strong>Research thoroughly:</strong> Investigate any investment opportunity before committing funds.</li>
+                    <li><strong>Be skeptical of celebrity endorsements:</strong> Scammers often fake celebrity involvement.</li>
+                    <li><strong>Cryptocurrency caution:</strong> Be extremely careful with crypto investments - they're largely unregulated.</li>
+                    <li><strong>Pyramid schemes:</strong> If an opportunity focuses more on recruitment than actual products/services, it's likely a scam.</li>
+                    <li><strong>Proprietary strategies:</strong> Be suspicious of "secret" or "proprietary" investment methods.</li>
+                </ul>
+                <p>Remember: High returns always come with high risks. If an investment sounds too good to be true, it almost certainly is.</p>
+            """
+        elif any(keyword in question for keyword in romance_keywords):
+            return """
+                <h3>Romance and Dating Scam Protection</h3>
+                <p>Protect yourself from romance scams with these guidelines:</p>
+                <ul>
+                    <li><strong>Profiles that seem too perfect:</strong> Be skeptical of profiles that appear flawless.</li>
+                    <li><strong>Quick professions of love:</strong> Scammers often declare love very early to manipulate victims.</li>
+                    <li><strong>Refusal to video chat:</strong> Be wary if someone always has excuses not to video chat.</li>
+                    <li><strong>Sob stories followed by money requests:</strong> Watch for tales of hardship that lead to requests for financial help.</li>
+                    <li><strong>Claims of working overseas:</strong> Many scammers claim to be working abroad in the military or on oil rigs.</li>
+                    <li><strong>Never send money:</strong> Don't send money, gift cards, cryptocurrency, or financial information to someone you haven't met in person.</li>
+                    <li><strong>Reverse image search:</strong> Check if their profile photos appear elsewhere online.</li>
+                    <li><strong>Keep conversations on the dating platform:</strong> Scammers try to move communication off-platform quickly.</li>
+                </ul>
+                <p>Trust your instincts. If something feels wrong or inconsistent, it probably is. Real love doesn't ask for money.</p>
+            """
+        elif any(keyword in question for keyword in tech_support_keywords):
+            return """
+                <h3>Tech Support Scam Protection</h3>
+                <p>Protect yourself from fake tech support scams with these guidelines:</p>
+                <ul>
+                    <li><strong>Unsolicited calls:</strong> Legitimate tech companies don't call you without your request.</li>
+                    <li><strong>Pop-up warnings:</strong> Real security alerts won't ask you to call a phone number or visit an external website.</li>
+                    <li><strong>Never allow remote access:</strong> Don't give unknown callers remote access to your computer.</li>
+                    <li><strong>Be skeptical of tech problems you weren't aware of:</strong> Scammers often "discover" problems that don't exist.</li>
+                    <li><strong>Microsoft, Apple, Google don't call:</strong> These companies don't make unsolicited calls about computer problems.</li>
+                    <li><strong>Don't trust caller ID:</strong> Scammers can fake the number that appears on your caller ID.</li>
+                    <li><strong>Ask for identification:</strong> Ask for the caller's full name, employee ID, and department.</li>
+                    <li><strong>Hang up and call back:</strong> If concerned, hang up and call the company directly using their official number.</li>
+                </ul>
+                <p>If you need tech support, reach out directly to the company through their official website or customer service number.</p>
             """
         elif any(keyword in question for keyword in personal_info_keywords):
             return """
@@ -1057,23 +1158,33 @@ def generate_fallback_response(question):
                     <li><strong>Be cautious with social media:</strong> Limit the personal information you share publicly.</li>
                     <li><strong>Shred sensitive documents:</strong> Prevent dumpster diving for your information.</li>
                     <li><strong>Check privacy settings:</strong> Regularly review and update privacy settings on your accounts.</li>
+                    <li><strong>Be wary of "security questions":</strong> Don't use easily discoverable information for security answers.</li>
+                    <li><strong>Monitor credit reports:</strong> Check your credit reports regularly for unauthorized activity.</li>
+                    <li><strong>Secure your devices:</strong> Use screen locks, encryption, and security software on all devices.</li>
                 </ul>
                 <p>Remember: Your personal information is valuable. Treat it like you would any other valuable possession.</p>
             """
         else:
             # General scam information
             return """
-                <h3>General Scam Protection Tips</h3>
-                <p>Here are some universal tips to protect yourself from scams:</p>
+                <h3>General Scam Protection and Identification Tips</h3>
+                <p>Here are universal tips to identify and protect yourself from all types of scams:</p>
                 <ul>
-                    <li><strong>If it seems too good to be true, it probably is.</strong> Unrealistic offers are a red flag.</li>
-                    <li><strong>Never send money to someone you haven't met in person.</strong></li>
-                    <li><strong>Don't make rushed decisions.</strong> Scammers create urgency to prevent you from thinking clearly.</li>
-                    <li><strong>Research before you act.</strong> Look up companies, offers, or situations online.</li>
-                    <li><strong>Keep your devices and software updated.</strong> Security patches protect against known vulnerabilities.</li>
+                    <li><strong>If it seems too good to be true, it probably is.</strong> Unrealistic offers are major red flags.</li>
+                    <li><strong>Pressure tactics:</strong> Scammers create artificial urgency to prevent you from thinking clearly or getting second opinions.</li>
+                    <li><strong>Unusual payment methods:</strong> Be suspicious of requests for wire transfers, gift cards, cryptocurrency, or payment apps.</li>
+                    <li><strong>Poor grammar and spelling:</strong> Many scams originate overseas and contain language errors.</li>
+                    <li><strong>Requests for personal information:</strong> Legitimate organizations rarely ask for sensitive information via email or phone.</li>
+                    <li><strong>Emotional manipulation:</strong> Scammers often use fear, excitement, sympathy, or romance to cloud your judgment.</li>
+                    <li><strong>Suspicious contact methods:</strong> Be wary of unsolicited communications about money, accounts, or sensitive information.</li>
+                    <li><strong>Offers requiring upfront payment:</strong> Be skeptical of prizes, jobs, or loans requiring advance fees.</li>
+                    <li><strong>Trust your instincts:</strong> If something feels wrong or suspicious, it's better to be cautious.</li>
+                    <li><strong>Research before you act:</strong> Search online for the company name plus "scam" or "complaint".</li>
+                    <li><strong>Consult others:</strong> Talk to trusted friends or family before making financial decisions.</li>
+                    <li><strong>Keep your devices updated:</strong> Security patches protect against known vulnerabilities.</li>
                     <li><strong>Use our scanning tools:</strong> Check suspicious images, links, and files using GS Oasis.</li>
                 </ul>
-                <p>Trust your instincts - if something feels wrong, it's better to be cautious than sorry.</p>
+                <p>Stay informed about current scams by visiting consumer protection websites like the FTC (ftc.gov) and following security news.</p>
             """
     else:
         # Default response for non-scam related questions
@@ -1085,8 +1196,12 @@ def generate_fallback_response(question):
                 <li>Suspicious link identification</li>
                 <li>Phone and text message scams</li>
                 <li>Financial and banking scams</li>
+                <li>Investment and cryptocurrency scams</li>
+                <li>Romance and dating scams</li>
+                <li>Tech support scams</li>
                 <li>Personal information protection</li>
-                <li>General scam prevention</li>
+                <li>What to do if you've been scammed</li>
+                <li>General scam prevention and identification</li>
             </ul>
             <p>Please ask a question about one of these topics for specific guidance.</p>
             
@@ -1266,7 +1381,7 @@ def contact():
                 
                 # Insert the message
                 cursor.execute(
-                    'INSERT INTO contact_messages (name, email, subject, message) VALUES (?, ?, ?, ?)',
+                    'INSERT INTO contact_messages (name, email, subject, message) VALUES (?, ?, ?)',
                     (name, email, subject, message)
                 )
                 conn.commit()

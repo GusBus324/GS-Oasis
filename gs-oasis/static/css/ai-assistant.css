@@ -227,3 +227,38 @@
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
     line-height: 1.7;
 }
+
+/* User question styling */
+.user-question {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.user-question h4 {
+    color: var(--primary-color);
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+}
+
+.user-question p {
+    font-style: italic;
+    color: #555;
+    background: #f8f8f8;
+    padding: 12px 15px;
+    border-radius: 8px;
+    border-left: 3px solid var(--accent-color);
+}
+
+/* AI response styling */
+.ai-response {
+    margin-top: 20px;
+}
+
+.ai-response h3 {
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--accent-color);
+    display: inline-block;
+}
