@@ -1,0 +1,42 @@
+2025-06-19 14:20:37,390 - root - INFO - Testing scan results with AI integration...
+2025-06-19 14:20:38,825 - root - INFO - Configuring SSL for OpenAI API
+2025-06-19 14:20:47,563 - root - INFO - Testing Scam case...
+2025-06-19 14:20:47,645 - root - INFO - Created test image: test_images/test_scam_case.png
+2025-06-19 14:20:58,492 - root - INFO - Scam case - Extracted text: 'URGENT: Your account has been locked! Click here i...'
+2025-06-19 14:20:58,494 - root - INFO - Scam case - Scam detection: True, confidence: 100%
+2025-06-19 14:20:58,494 - root - INFO - Attempting OpenAI API call with custom SSL context...
+2025-06-19 14:21:13,632 - root - ERROR - OpenAI API Error (primary method): Error communicating with OpenAI: HTTPSConnectionPool(host='api.openai.com', port=443): Max retries exceeded with url: /v1/chat/completions (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:1002)')))
+2025-06-19 14:21:13,634 - root - INFO - Attempting direct API request as fallback...
+2025-06-19 14:21:23,314 - root - ERROR - Fallback approach also failed: HTTPSConnectionPool(host='api.openai.com', port=443): Max retries exceeded with url: /v1/chat/completions (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:1002)')))
+2025-06-19 14:21:23,317 - root - INFO - Attempting final fallback with permissive SSL context...
+2025-06-19 14:21:23,371 - urllib3.connectionpool - WARNING - Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:1002)'))': /v1/chat/completions
+2025-06-19 14:21:23,384 - urllib3.connectionpool - WARNING - Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:1002)'))': /v1/chat/completions
+2025-06-19 14:21:23,397 - urllib3.connectionpool - WARNING - Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:1002)'))': /v1/chat/completions
+2025-06-19 14:21:31,302 - root - INFO - Successfully received OpenAI API response via permissive fallback
+2025-06-19 14:21:31,303 - root - INFO - Scam case - AI response received! Length: 1738 characters
+2025-06-19 14:21:31,303 - root - INFO - Scam case - Contains expected outcome 'SCAM DETECTED': True
+2025-06-19 14:21:31,303 - root - INFO - Scam case - Has educational content: True
+2025-06-19 14:21:31,303 - root - INFO - Scam case - Has red flags: True
+2025-06-19 14:21:31,304 - root - INFO - Cleaned up test image: test_images/test_scam_case.png
+2025-06-19 14:21:31,304 - root - INFO - Testing Suspicious case...
+2025-06-19 14:21:31,390 - root - INFO - Created test image: test_images/test_suspicious_case.png
+2025-06-19 14:21:39,264 - root - INFO - Suspicious case - Extracted text: 'Please review your account settings. Some unusual ...'
+2025-06-19 14:21:39,265 - root - INFO - Suspicious case - Scam detection: True, confidence: 100%
+2025-06-19 14:21:39,265 - root - INFO - Attempting OpenAI API call with custom SSL context...
+2025-06-19 14:21:46,951 - root - INFO - Successfully received OpenAI API response
+2025-06-19 14:21:46,952 - root - INFO - Suspicious case - AI response received! Length: 1691 characters
+2025-06-19 14:21:46,952 - root - INFO - Suspicious case - Contains expected outcome 'SUSPICIOUS CONTENT': True
+2025-06-19 14:21:46,952 - root - INFO - Suspicious case - Has educational content: True
+2025-06-19 14:21:46,953 - root - INFO - Suspicious case - Has red flags: True
+2025-06-19 14:21:46,955 - root - INFO - Cleaned up test image: test_images/test_suspicious_case.png
+2025-06-19 14:21:46,956 - root - INFO - Testing Safe case...
+2025-06-19 14:21:47,023 - root - INFO - Created test image: test_images/test_safe_case.png
+2025-06-19 14:21:56,908 - root - INFO - Safe case - Extracted text: 'Hello, this is a reminder about your appointment t...'
+2025-06-19 14:21:56,911 - root - INFO - Safe case - Scam detection: False, confidence: 0%
+2025-06-19 14:21:56,912 - root - INFO - Attempting OpenAI API call with custom SSL context...
+2025-06-19 14:22:03,508 - root - INFO - Successfully received OpenAI API response
+2025-06-19 14:22:03,508 - root - INFO - Safe case - AI response received! Length: 1378 characters
+2025-06-19 14:22:03,508 - root - INFO - Safe case - Contains expected outcome 'NO SCAM DETECTED': True
+2025-06-19 14:22:03,508 - root - INFO - Safe case - Has educational content: True
+2025-06-19 14:22:03,509 - root - INFO - Safe case - Has red flags: True
+2025-06-19 14:22:03,510 - root - INFO - Cleaned up test image: test_images/test_safe_case.png

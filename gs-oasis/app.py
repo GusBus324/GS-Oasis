@@ -633,11 +633,11 @@ def scan_image():
                         # If AI is available, get its analysis
                         if AI_AVAILABLE and extracted_text.strip():
                             try:
-                                ai_prompt = f"Analyze the following text extracted from an image and determine if it is a scam. Provide a brief summary of your findings. Text: {extracted_text}"
+                                ai_prompt = f"Analyze the following text extracted from an image and determine if it is a scam. Text: {extracted_text}"
                                 ai_response = get_open_ai_repsonse(ai_prompt)
                                 if ai_response:
-                                    ai_analysis_summary = f"AI Assistant Analysis: {ai_response}"
-                                    analysis_results.append(ai_analysis_summary) # Add AI summary to results
+                                    ai_analysis_summary = ai_response
+                                    analysis_results.append("AI analysis completed successfully") # Add AI summary to results
                                 else:
                                     analysis_results.append("AI Assistant: Could not get a response.")
                             except Exception as ai_error:
@@ -662,6 +662,10 @@ def scan_image():
                             result_msg += f"\n• {reason}"
                             
                         result_msg += "\n\n<strong>Recommendation:</strong> Do not respond to this message, click any links, or call any phone numbers provided."
+                        
+                        # Add the AI analysis if available
+                        if 'ai_analysis_summary' in locals() and ai_analysis_summary:
+                            result_msg += f"\n\n<div class='ai-analysis'>{ai_analysis_summary}</div>"
                         
                         # Add specialized advice for text message scams
                         result_msg += "\n\n<div class='education-tips'>"
@@ -699,8 +703,16 @@ def scan_image():
                             for finding in suspicious_analysis:
                                 result_msg += f"\n• {finding}"
                             result_msg += "\n\nRecommendation: Exercise caution with messages from this sender."
+                            
+                            # Add the AI analysis if available
+                            if 'ai_analysis_summary' in locals() and ai_analysis_summary:
+                                result_msg += f"\n\n<div class='ai-analysis'>{ai_analysis_summary}</div>"
                         else:
                             result_msg = f"✅ NO SCAM DETECTED\n\nThis message appears to be legitimate based on our analysis."
+                            
+                            # Add the AI analysis if available
+                            if 'ai_analysis_summary' in locals() and ai_analysis_summary:
+                                result_msg += f"\n\n<div class='ai-analysis'>{ai_analysis_summary}</div>"
                             
                             # Add a note about what was found in the image
                             if analysis_results:
@@ -717,6 +729,10 @@ def scan_image():
                         for reason in reasons:
                             result_msg += f"\n• {reason}"
                         result_msg += "\n\nRecommendation: Do not trust information in this image or follow instructions within it."
+                        
+                        # Add the AI analysis if available
+                        if 'ai_analysis_summary' in locals() and ai_analysis_summary:
+                            result_msg += f"\n\n<div class='ai-analysis'>{ai_analysis_summary}</div>"
                     else:
                         # Check if any of the analysis results indicate suspicious content
                         suspicious_keywords = ['suspicious', 'hiding', 'manipulated', 'blurry', 'qr code']
@@ -728,6 +744,10 @@ def scan_image():
                             for finding in suspicious_analysis:
                                 result_msg += f"\n• {finding}"
                             result_msg += "\n\nRecommendation: Exercise caution with this image."
+                            
+                            # Add the AI analysis if available
+                            if 'ai_analysis_summary' in locals() and ai_analysis_summary:
+                                result_msg += f"\n\n<div class='ai-analysis'>{ai_analysis_summary}</div>"
                         else:
                             checks_text = ", ".join(performed_checks) if performed_checks else "Basic analysis"
                             result_msg = f"✅ NO SCAM DETECTED\n\nAnalysis performed: {checks_text}"
@@ -737,6 +757,10 @@ def scan_image():
                                 result_msg += "\n\nFindings:"
                                 for finding in analysis_results[:5]:  # Limit to first 5 findings
                                     result_msg += f"\n• {finding}"
+                            
+                            # Add the AI analysis if available
+                            if 'ai_analysis_summary' in locals() and ai_analysis_summary:
+                                result_msg += f"\n\n<div class='ai-analysis'>{ai_analysis_summary}</div>"
                 
                 # Add information about extracted text
                 if extracted_text and len(extracted_text) > 20 and not extracted_text.startswith("[Please upload"):

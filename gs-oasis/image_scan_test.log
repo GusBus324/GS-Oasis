@@ -1,0 +1,17 @@
+2025-06-19 14:18:21,292 - root - INFO - Testing image scan AI integration...
+2025-06-19 14:18:21,491 - root - INFO - Created test image: test_images/test_scam_ai_integration.png
+2025-06-19 14:18:22,626 - root - INFO - Configuring SSL for OpenAI API
+2025-06-19 14:18:36,432 - root - INFO - Successfully extracted text: 'URGENT: Your account has been locked! Click here immediately to verify your accol...'
+2025-06-19 14:18:36,432 - root - INFO - Analysis results count: 12
+2025-06-19 14:18:36,433 - root - INFO - Scam detection result: True, confidence: 100%
+2025-06-19 14:18:36,433 - root - INFO - Reasons detected: 5
+2025-06-19 14:18:36,433 - root - INFO - Attempting OpenAI API call with custom SSL context...
+2025-06-19 14:18:47,334 - root - INFO - Successfully received OpenAI API response
+2025-06-19 14:18:47,335 - root - INFO - AI response received! Length: 1753 characters
+2025-06-19 14:18:47,335 - root - INFO - ✅ Found expected term in AI response: 'SCAM DETECTED'
+2025-06-19 14:18:47,335 - root - WARNING - ⚠️ Expected term not found in AI response: 'SUSPICIOUS CONTENT'
+2025-06-19 14:18:47,335 - root - WARNING - ⚠️ Expected term not found in AI response: 'NO SCAM DETECTED'
+2025-06-19 14:18:47,336 - root - INFO - ✅ Found expected term in AI response: 'Analysis'
+2025-06-19 14:18:47,336 - root - INFO - ✅ Found expected term in AI response: 'Educational Information'
+2025-06-19 14:18:47,336 - root - INFO - ✅ Found expected term in AI response: 'Red Flags'
+2025-06-19 14:18:47,338 - root - INFO - Cleaned up test image: test_images/test_scam_ai_integration.png
