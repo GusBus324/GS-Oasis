@@ -60,8 +60,19 @@ except ImportError:
 app = Flask(__name__)
 app.secret_key = "gs-oasis-secret-key"  # Required for flash messages
 
-# Create directory for temporary files if it doesn't exist
-os.makedirs(os.path.join(os.path.dirname(__file__), 'static/temp'), exist_ok=True)
+# Create directories for temporary files if they don't exist
+temp_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'temp')
+os.makedirs(temp_dir, exist_ok=True)
+
+# Verify temp directory is writable
+if not os.access(temp_dir, os.W_OK):
+    warnings.warn(f"Temp directory {temp_dir} is not writable. File uploads may fail.")
+    try:
+        # Try to make it writable
+        os.chmod(temp_dir, 0o755)  # rwxr-xr-x
+        print(f"Updated permissions for {temp_dir}")
+    except Exception as e:
+        warnings.warn(f"Failed to update permissions: {str(e)}")
 
 # Initialize SQLite database
 def init_db():
@@ -569,11 +580,29 @@ def scan_image():
                 # Generate a unique filename for the temp image
                 timestamp = str(int(os.path.getmtime(__file__))) if os.path.exists(__file__) else str(int(time.time()))
                 unique_id = hashlib.md5((file.filename + timestamp).encode()).hexdigest()[:10]
-                temp_filename = f"scan_{unique_id}_{os.path.basename(file.filename)}"
-                temp_path = os.path.join(os.path.dirname(__file__), 'static/temp', temp_filename)
                 
-                # Save image temporarily for analysis
-                file.save(temp_path)
+                # Clean filename to avoid path traversal and special characters
+                safe_filename = re.sub(r'[^\w\.-]', '_', os.path.basename(file.filename))
+                temp_filename = f"scan_{unique_id}_{safe_filename}"
+                
+                # Construct absolute path for temp file
+                temp_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'temp')
+                temp_path = os.path.join(temp_dir, temp_filename)
+                
+                # Ensure the directory exists
+                os.makedirs(temp_dir, exist_ok=True)
+                
+                try:
+                    # Save image temporarily for analysis
+                    file.save(temp_path)
+                    
+                    # Verify file was actually saved
+                    if not os.path.exists(temp_path):
+                        raise FileNotFoundError(f"Failed to save file at {temp_path}")
+                except Exception as e:
+                    app.logger.error(f"File save error: {str(e)}")
+                    flash(f"Error saving uploaded file: {str(e)}", "danger")
+                    return redirect(url_for('scan_file'))
                 
                 # Perform comprehensive image analysis
                 try:
@@ -626,7 +655,7 @@ def scan_image():
                     # Specialized text message scam analysis
                     if is_scam:
                         risk_level = "High Risk" if confidence > 60 else "Medium Risk"
-                        result_msg = f"⚠️ {risk_level}: This text message contains indicators of a potential scam ({confidence}% confidence)."
+                        result_msg = f"⚠️ SCAM DETECTED ({risk_level}): This text message contains indicators of a potential scam ({confidence}% confidence)."
                         
                         # Add detected reasons
                         for reason in reasons:
@@ -666,12 +695,12 @@ def scan_image():
                                                if any(keyword in result.lower() for keyword in suspicious_keywords)]
                         
                         if suspicious_analysis:
-                            result_msg = f"⚠️ Caution Advised: While no scam text was detected, our scan found potential issues with this text message:"
+                            result_msg = f"⚠️ SUSPICIOUS CONTENT: While no definite scam was detected, our scan found potential issues with this text message:"
                             for finding in suspicious_analysis:
                                 result_msg += f"\n• {finding}"
                             result_msg += "\n\nRecommendation: Exercise caution with messages from this sender."
                         else:
-                            result_msg = f"✅ No suspicious content detected in this text message.\n\nThis message appears to be legitimate based on our analysis."
+                            result_msg = f"✅ NO SCAM DETECTED\n\nThis message appears to be legitimate based on our analysis."
                             
                             # Add a note about what was found in the image
                             if analysis_results:
@@ -684,7 +713,7 @@ def scan_image():
                     # Standard image analysis for non-text message images
                     if is_scam:
                         risk_level = "High Risk" if confidence > 60 else "Medium Risk"
-                        result_msg = f"⚠️ {risk_level}: This image contains text with indicators of a potential scam ({confidence}% confidence)."
+                        result_msg = f"⚠️ SCAM DETECTED ({risk_level}): This image contains text with indicators of a potential scam ({confidence}% confidence)."
                         for reason in reasons:
                             result_msg += f"\n• {reason}"
                         result_msg += "\n\nRecommendation: Do not trust information in this image or follow instructions within it."
@@ -695,13 +724,13 @@ def scan_image():
                                               if any(keyword in result.lower() for keyword in suspicious_keywords)]
                         
                         if suspicious_analysis:
-                            result_msg = f"⚠️ Caution Advised: While no scam text was detected, our scan found potential issues with this image:"
+                            result_msg = f"⚠️ SUSPICIOUS CONTENT: While no definite scam was detected, our scan found potential issues with this image:"
                             for finding in suspicious_analysis:
                                 result_msg += f"\n• {finding}"
                             result_msg += "\n\nRecommendation: Exercise caution with this image."
                         else:
                             checks_text = ", ".join(performed_checks) if performed_checks else "Basic analysis"
-                            result_msg = f"✅ No suspicious content detected.\n\nAnalysis performed: {checks_text}"
+                            result_msg = f"✅ NO SCAM DETECTED\n\nAnalysis performed: {checks_text}"
                             
                             # Add a note about what was found in the image
                             if analysis_results:
@@ -1356,7 +1385,7 @@ def contact():
             return redirect(url_for('contact'))
         
         # Email validation with regex
-        email_pattern = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+        email_attern = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z09.-]+\.[a-zA-Z]{2,}$')
         if not email_pattern.match(email):
             flash('Please enter a valid email address.', 'danger')
             return redirect(url_for('contact'))
@@ -1522,9 +1551,17 @@ def analyze_image_content(image_path):
     performed_checks = []
     extracted_text = ""
     
-    # 1. Check if the image exists
-    if not os.path.exists(image_path):
-        return extracted_text, ["Image file not found or inaccessible"], ["File access check"]
+    # 1. Check if the image exists and is accessible
+    if not image_path or not os.path.exists(image_path):
+        error_msg = f"Image file not found or inaccessible: {image_path}"
+        app.logger.error(error_msg)
+        return extracted_text, [error_msg], ["File access check"]
+    
+    # Verify file is readable
+    if not os.access(image_path, os.R_OK):
+        error_msg = f"Image file exists but is not readable: {image_path}"
+        app.logger.error(error_msg)
+        return extracted_text, [error_msg], ["File access check"]
     
     # 2. Basic image validation that works without specialized libraries
     try:
@@ -1736,9 +1773,9 @@ def analyze_image_content(image_path):
     if len(scam_indicators) >= 3:
         analysis_results.append("⚠️ HIGH LIKELIHOOD OF SCAM: Multiple suspicious patterns detected")
     elif len(scam_indicators) >= 1:
-        analysis_results.append("⚠️ MEDIUM LIKELIHOOD OF SCAM: Some suspicious patterns detected") 
+        analysis_results.append("⚠️ SUSPICIOUS CONTENT: Some suspicious patterns detected") 
     else:
-        analysis_results.append("✅ LOW LIKELIHOOD OF SCAM: No significant suspicious patterns detected")
+        analysis_results.append("✅ NO SCAM DETECTED: No significant suspicious patterns found")
     
     return extracted_text, analysis_results, performed_checks
 

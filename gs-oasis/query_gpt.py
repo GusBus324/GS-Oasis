@@ -40,7 +40,7 @@ def get_open_ai_repsonse(user_question):
 
     user_prompt = "Take a look at the following message. Decide whether it is a possible scam threatening the user. Explain why it is if you believe it is."
 
-    modifier = "Provide the response in a JSON format with the following keys: \"finalDecision\", \"rationale\", \"educationalContent\", and \"redFlags\". The finalDecision should be a clear 'Yes' or 'No' whether this is a phishing scam. The rationale should explain your reasoning. The educationalContent should be a short paragraph explaining how to identify phishing scams. The redFlags should be a list of common signs of phishing scams. IMPORTANT: Ensure your response is valid JSON that can be parsed."
+    modifier = "Provide the response in a JSON format with the following keys: \"finalDecision\", \"rationale\", \"educationalContent\", and \"redFlags\". The finalDecision should be one of 'Yes' (definitely a scam), 'Maybe' (suspicious content), or 'No' (not a scam). The rationale should explain your reasoning. The educationalContent should be a short paragraph explaining how to identify scams. The redFlags should be a list of common signs of scams. IMPORTANT: Ensure your response is valid JSON that can be parsed."
 
     response = openai.ChatCompletion.create(
         model="gpt-4",
@@ -67,8 +67,8 @@ def get_open_ai_repsonse(user_question):
             # Fallback if no JSON can be extracted
             return f"""
             <div class="professional-response">
-                <div class="response-header" style="background: var(--accent-color);">
-                    <h2>🔍 Analysis Results</h2>
+                <div class="response-header alert-warning">
+                    <h2>⚠️ Analysis Results</h2>
                 </div>
                 <div class="response-section">
                     <h3>Analysis</h3>
@@ -80,11 +80,27 @@ def get_open_ai_repsonse(user_question):
 def format_response_as_html(data):
     """Format the parsed JSON response as professional HTML."""
     
-    # Determine the status class based on whether it's a phishing scam
-    is_phishing = "Yes" in str(data.get("finalDecision", ""))
-    status_class = "alert-danger" if is_phishing else "alert-success"
-    status_icon = "⚠️" if is_phishing else "✅"
-    status_text = "PHISHING DETECTED" if is_phishing else "NO PHISHING DETECTED"
+    # Determine the status class based on the detection result
+    decision = str(data.get("finalDecision", "")).lower()
+    
+    if "yes" in decision:
+        # Definite scam
+        status_class = "alert-danger"
+        status_icon = "⚠️"
+        status_text = "SCAM DETECTED"
+        header_style = "background: #d9534f;"  # Red background
+    elif "maybe" in decision or "suspicious" in decision or "possibly" in decision:
+        # Suspicious content
+        status_class = "alert-warning"
+        status_icon = "⚠️"
+        status_text = "SUSPICIOUS CONTENT"
+        header_style = "background: #f0ad4e;"  # Yellow/amber background
+    else:
+        # No scam detected
+        status_class = "alert-success"
+        status_icon = "✅"
+        status_text = "NO SCAM DETECTED"
+        header_style = "background: #5cb85c;"  # Green background
     
     # Format the red flags as a list
     red_flags_html = ""
@@ -99,10 +115,10 @@ def format_response_as_html(data):
         if isinstance(red_flags, str):
             red_flags_html = f"<p>{html.escape(red_flags)}</p>"
     
-    # Build the complete HTML response with updated styling
+    # Build the complete HTML response
     html_response = f"""
     <div class="professional-response">
-        <div class="response-header" style="background: {('#ff7b24' if is_phishing else '#00a6b7')};">
+        <div class="response-header" style="{header_style}">
             <h2>{status_icon} {status_text}</h2>
         </div>
         
