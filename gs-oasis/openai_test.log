@@ -1,0 +1,66 @@
+2025-06-19 12:00:13,337 - root - INFO - Testing OpenAI API connection with SSL fix...
+2025-06-19 12:00:13,337 - root - INFO - Testing with: Basic test
+2025-06-19 12:00:14,428 - root - ERROR - OpenAI API Error: 'SSLAdapter' object has no attribute 'poolmanager'
+Traceback (most recent call last):
+  File "/Users/gussimmonds/Desktop/SOFWARE MAJOR/GS-Oasis/gs-oasis/query_gpt.py", line 84, in get_open_ai_repsonse
+    response = openai.ChatCompletion.create(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/openai/api_resources/chat_completion.py", line 25, in create
+    return super().create(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/openai/api_resources/abstract/engine_api_resource.py", line 153, in create
+    response, _, api_key = requestor.request(
+                           ^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/openai/api_requestor.py", line 288, in request
+    result = self.request_raw(
+             ^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/openai/api_requestor.py", line 596, in request_raw
+    result = _thread_context.session.request(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/requests/sessions.py", line 587, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/requests/sessions.py", line 701, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/requests/adapters.py", line 456, in send
+    conn = self.get_connection(request.url, proxies)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/requests/adapters.py", line 358, in get_connection
+    conn = self.poolmanager.connection_from_url(url)
+           ^^^^^^^^^^^^^^^^
+AttributeError: 'SSLAdapter' object has no attribute 'poolmanager'
+2025-06-19 12:00:14,436 - root - INFO - ✅ Success! Response length: 570 characters
+2025-06-19 12:00:14,437 - root - INFO - Testing with: Scam test
+2025-06-19 12:00:15,468 - root - ERROR - OpenAI API Error: 'SSLAdapter' object has no attribute 'poolmanager'
+Traceback (most recent call last):
+  File "/Users/gussimmonds/Desktop/SOFWARE MAJOR/GS-Oasis/gs-oasis/query_gpt.py", line 84, in get_open_ai_repsonse
+    response = openai.ChatCompletion.create(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/openai/api_resources/chat_completion.py", line 25, in create
+    return super().create(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/openai/api_resources/abstract/engine_api_resource.py", line 153, in create
+    response, _, api_key = requestor.request(
+                           ^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/openai/api_requestor.py", line 288, in request
+    result = self.request_raw(
+             ^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/openai/api_requestor.py", line 596, in request_raw
+    result = _thread_context.session.request(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/requests/sessions.py", line 587, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/requests/sessions.py", line 701, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/requests/adapters.py", line 456, in send
+    conn = self.get_connection(request.url, proxies)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/requests/adapters.py", line 358, in get_connection
+    conn = self.poolmanager.connection_from_url(url)
+           ^^^^^^^^^^^^^^^^
+AttributeError: 'SSLAdapter' object has no attribute 'poolmanager'
+2025-06-19 12:00:15,470 - root - INFO - ✅ Success! Response length: 570 characters
+2025-06-19 12:00:15,471 - root - INFO - ✅ All 2/2 tests passed!

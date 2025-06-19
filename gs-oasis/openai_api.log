@@ -1,0 +1,19 @@
+2025-06-19 14:02:00,921 - root - INFO - Testing OpenAI API connection with SSL fix...
+2025-06-19 14:02:00,921 - root - INFO - Testing with: Basic test
+2025-06-19 14:02:01,926 - root - INFO - Attempting OpenAI API call with custom SSL context...
+2025-06-19 14:02:09,008 - root - INFO - Successfully received OpenAI API response
+2025-06-19 14:02:09,012 - root - INFO - ✅ Success! Response length: 1336 characters
+2025-06-19 14:02:09,016 - root - INFO - Testing with: Scam test
+2025-06-19 14:02:10,016 - root - INFO - Attempting OpenAI API call with custom SSL context...
+2025-06-19 14:02:17,436 - root - INFO - Successfully received OpenAI API response
+2025-06-19 14:02:17,439 - root - INFO - ✅ Success! Response length: 1418 characters
+2025-06-19 14:02:17,440 - root - INFO - ✅ All 2/2 tests passed!
+2025-06-19 14:02:24,042 - root - INFO - Attempting OpenAI API call with custom SSL context...
+2025-06-19 14:02:24,173 - root - ERROR - OpenAI API Error (primary method): Error communicating with OpenAI: HTTPSConnectionPool(host='api.openai.com', port=443): Max retries exceeded with url: /v1/chat/completions (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:1002)')))
+2025-06-19 14:02:24,173 - root - INFO - Attempting direct API request as fallback...
+2025-06-19 14:02:34,364 - root - INFO - Successfully received OpenAI API response via fallback method
+2025-06-19 14:04:48,534 - root - INFO - Configuring SSL for OpenAI API
+2025-06-19 14:04:48,570 - root - INFO - Attempting OpenAI API call with custom SSL context...
+2025-06-19 14:04:56,288 - root - INFO - Successfully received OpenAI API response
+2025-06-19 14:05:07,585 - root - INFO - Configuring SSL for OpenAI API
+2025-06-19 14:05:40,176 - root - INFO - Configuring SSL for OpenAI API
